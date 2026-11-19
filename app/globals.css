@@ -1,0 +1,147 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%; /* #ffffff */
+    --foreground: 0 0% 3.9%;  /* #09090b */
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+
+    --primary: 0 0% 9%;       /* #18181b */
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 0 0% 96.1%;  /* #f4f4f5 */
+    --secondary-foreground: 0 0% 9%;
+
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%; /* #71717a */
+
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+
+    --destructive: 0 0% 9%;   /* keep monochrome */
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 89.8%;     /* #e4e4e7 */
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 3.9%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 0 0% 3.9%;  /* #09090b */
+    --foreground: 0 0% 98%;   /* #fafafa */
+
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+
+    --secondary: 0 0% 14.9%;  /* #27272a */
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 0% 98%;
+    --destructive-foreground: 0 0% 9%;
+
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer base { body { background: #f7f7f7; } button, input, select { min-height: 36px; } :focus-visible { outline: 2px solid #171717; outline-offset: 3px; } }
+
+@layer base { body { font-family: var(--font-line-seed), Arial, Tahoma, sans-serif; } }
+
+/* ---- Print: output only the document (invoice/quotation), centered on the page ----
+   The print document section carries id `invoice-print-*` / `quotation-print-*`.
+   Everything else in the app shell is hidden; the document is laid out at the top-left
+   of the paper at exact mm size so the browser does not rescale or clip it. */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+    height: auto !important;
+  }
+
+  /* Hide everything, then re-show only the path to the print document. */
+  body * {
+    visibility: hidden;
+  }
+
+  section[id^="invoice-print-"],
+  section[id^="quotation-print-"],
+  section[id^="invoice-print-"] *,
+  section[id^="quotation-print-"] * {
+    visibility: visible;
+  }
+
+  section[id^="invoice-print-"],
+  section[id^="quotation-print-"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: 0;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+}
+
+/* Modern sleek scrollbar styles */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d4d4d8;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1aa;
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #d4d4d8 transparent;
+}
+
+/* Hide Next.js dev overlay indicator in development so it doesn't obstruct UI */
+#next-logo,
+[data-nextjs-dev-indicator],
+[data-nextjs-toast] {
+  display: none !important;
+}

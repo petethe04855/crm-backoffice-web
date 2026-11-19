@@ -1,0 +1,63 @@
+"use client";
+
+import Link from "next/link";
+import { DataTable, type Column } from "@/components/common/DataTable";
+import { formatThaiDateTime } from "@/lib/utils";
+import type { ApiListResponse } from "@/types/api";
+import type { MemberListItem } from "../types/member";
+import { MemberStatusBadge } from "./MemberStatusBadge";
+
+const columns: Column<MemberListItem>[] = [
+  {
+    key: "memberCode",
+    label: "รหัสสมาชิก",
+    render: (m) => (
+      <Link href={`/members/${m.id}`} className="font-mono font-medium text-neutral-900 hover:underline">
+        {m.memberCode}
+      </Link>
+    ),
+  },
+  { key: "firstName", label: "ชื่อ-นามสกุล", render: (m) => `${m.firstName} ${m.lastName}` },
+  { key: "email", label: "อีเมล" },
+  { key: "phone", label: "เบอร์โทร" },
+  { key: "tierName", label: "ระดับ" },
+  { key: "pointBalance", label: "แต้ม", render: (m) => m.pointBalance.toLocaleString("th-TH") },
+  { key: "lifetimeSpend", label: "ยอดซื้อสะสม", money: true },
+  { key: "status", label: "สถานะ", render: (m) => <MemberStatusBadge status={m.status} /> },
+  {
+    key: "lastActiveAt",
+    label: "ใช้งานล่าสุด",
+    render: (m) => (m.lastActiveAt ? formatThaiDateTime(m.lastActiveAt, { includeTime: false }) : "—"),
+  },
+  { key: "registeredAt", label: "วันที่สมัคร", render: (m) => formatThaiDateTime(m.registeredAt, { includeTime: false }) },
+];
+
+/** Column 2 of the member page. */
+export function MemberTable({
+  data,
+  isLoading,
+  isError,
+  onRetry,
+  onPageChange,
+  onLimitChange,
+}: {
+  data: ApiListResponse<MemberListItem> | undefined;
+  isLoading: boolean;
+  isError: boolean;
+  onRetry: () => void;
+  onPageChange: (page: number) => void;
+  onLimitChange: (limit: number) => void;
+}) {
+  return (
+    <DataTable
+      rows={data?.data ?? []}
+      columns={columns}
+      meta={data?.meta ?? { page: 1, limit: 20, total: 0 }}
+      isLoading={isLoading}
+      isError={isError}
+      onRetry={onRetry}
+      onPageChange={onPageChange}
+      onLimitChange={onLimitChange}
+    />
+  );
+}

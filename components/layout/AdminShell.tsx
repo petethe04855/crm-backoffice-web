@@ -1,0 +1,68 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import type { ReactNode } from "react";
+import { LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { NAV_ITEMS } from "@/components/layout/nav";
+import { cn } from "@/lib/utils";
+import { hasPermission, useAuthStore } from "@/stores/authStore";
+
+/** Sidebar + top bar. Menu items are filtered by the staff member's permissions. */
+export function AdminShell({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const session = useAuthStore((s) => s.session);
+  const logout = useAuthStore((s) => s.logout);
+  const items = NAV_ITEMS.filter((i) => hasPermission(session, i.permission));
+
+  return (
+    <div className="min-h-screen flex flex-col lg:flex-row bg-neutral-50">
+      <aside className="lg:w-60 shrink-0 border-b lg:border-b-0 lg:border-r border-neutral-200 bg-white">
+        <div className="px-5 py-5 border-b border-neutral-100">
+          <p className="text-sm font-bold">Chawy CRM</p>
+          <p className="text-xs text-neutral-500">ระบบหลังบ้านสมาชิก</p>
+        </div>
+        <nav className="flex lg:flex-col gap-1 p-3 overflow-x-auto">
+          {items.map(({ href, label, icon: Icon }) => {
+            const active = pathname === href || pathname.startsWith(`${href}/`);
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={cn(
+                  "flex items-center gap-2 rounded-md px-3 py-2 text-sm whitespace-nowrap",
+                  active ? "bg-neutral-900 text-white" : "text-neutral-700 hover:bg-neutral-100",
+                )}
+              >
+                <Icon className="h-4 w-4" />
+                {label}
+              </Link>
+            );
+          })}
+        </nav>
+      </aside>
+      <div className="flex-1 min-w-0 flex flex-col">
+        <header className="flex items-center justify-end gap-3 border-b border-neutral-200 bg-white px-6 py-3">
+          <div className="text-right">
+            <p className="text-sm font-medium">{session?.email}</p>
+            <p className="text-xs text-neutral-500">{session?.roles.join(", ")}</p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              logout();
+              router.replace("/login");
+            }}
+          >
+            <LogOut className="h-4 w-4 mr-1" />
+            ออกจากระบบ
+          </Button>
+        </header>
+        <main className="flex-1 p-6">{children}</main>
+      </div>
+    </div>
+  );
+}

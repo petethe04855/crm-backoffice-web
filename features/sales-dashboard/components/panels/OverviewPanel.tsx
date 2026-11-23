@@ -11,6 +11,7 @@ import {
   shortPeriod,
 } from "../../lib/dashboard";
 import type { SalesCustomer, SalesReport } from "../../types/salesDashboard";
+import { formatThaiDateRange } from "@/lib/thaiDate";
 
 function Kpi({
   title,
@@ -60,9 +61,8 @@ export function OverviewPanel({
   const topProducts = report.products.slice(0, 4);
 
   return (
-    <section className="tab-panel active">
-      <div className="container">
-        <div className="kpi-grid" style={{ marginTop: 24 }}>
+    <div className="space-y-6">
+        <div className="kpi-grid">
           <Kpi
             title="ยอดขายรวม"
             icon="💰"
@@ -137,7 +137,7 @@ export function OverviewPanel({
                   primary: p.shopeeSales,
                   secondary: p.tiktokSales,
                   total: p.totalSales,
-                  hint: `${p.startDate} – ${p.endDate}: ${formatBaht(p.totalSales)} (${p.totalOrders} ออเดอร์)`,
+                  hint: `${formatThaiDateRange(p.startDate, p.endDate)}: ${formatBaht(p.totalSales)} (${p.totalOrders} ออเดอร์)`,
                 }))}
                 primaryLabel="Shopee"
                 secondaryLabel="TikTok"
@@ -294,7 +294,6 @@ export function OverviewPanel({
             />
           </div>
         </div>
-      </div>
-    </section>
+    </div>
   );
 }

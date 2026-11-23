@@ -46,6 +46,12 @@ export const promotionsApi = {
     return data.data;
   },
 
+  /** Hides the promotion again; it becomes "unpublic". */
+  async unpublish(id: string): Promise<Promotion> {
+    const { data } = await crmClient.post<ApiResponse<Promotion>>(`/promotions/${id}/unpublish`);
+    return data.data;
+  },
+
   async archive(id: string): Promise<Promotion> {
     const { data } = await crmClient.post<ApiResponse<Promotion>>(`/promotions/${id}/archive`);
     return data.data;

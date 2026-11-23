@@ -91,8 +91,8 @@ describe("toCouponInput", () => {
 describe("buildCouponParams", () => {
   it("drops empty filters and trims search", () => {
     expect(buildCouponParams(EMPTY_COUPON_FILTERS)).toEqual({ page: 1, limit: 20 });
-    expect(buildCouponParams({ ...EMPTY_COUPON_FILTERS, search: " ลด ", month: "2026-11", status: "active", channel: "line" })).toEqual({
-      page: 1, limit: 20, search: "ลด", month: "2026-11", status: "active", channel: "line",
+    expect(buildCouponParams({ ...EMPTY_COUPON_FILTERS, search: " ลด ", month: "2026-11", status: "public", channel: "line" })).toEqual({
+      page: 1, limit: 20, search: "ลด", month: "2026-11", status: "public", channel: "line",
     });
   });
 });

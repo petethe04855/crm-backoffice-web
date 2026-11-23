@@ -57,6 +57,11 @@ export function usePublishPromotion() {
   return usePromotionWrite((id: string): Promise<Promotion> => promotionsApi.publish(id));
 }
 
+/** Moves a published promotion back to unpublic. */
+export function useUnpublishPromotion() {
+  return usePromotionWrite((id: string): Promise<Promotion> => promotionsApi.unpublish(id));
+}
+
 export function useArchivePromotion() {
   return usePromotionWrite((id: string) => promotionsApi.archive(id));
 }

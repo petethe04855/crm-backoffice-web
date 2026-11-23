@@ -3,6 +3,7 @@
 import { useCustomerDetail } from "../hooks/useSalesDashboard";
 import { formatBaht, formatNumber } from "../lib/dashboard";
 import type { SalesCustomer, SalesFilters } from "../types/salesDashboard";
+import { formatThaiDateText } from "@/lib/thaiDate";
 
 /** Drill-down modal of one buyer. Only rendered for staff with buyer permission. */
 export function CustomerModal({
@@ -84,7 +85,7 @@ export function CustomerModal({
                     {detail.data.orders.map((order) => (
                       <tr key={`${order.platform}-${order.orderNo}`}>
                         <td>{order.orderNo}</td>
-                        <td>{order.date}</td>
+                        <td>{formatThaiDateText(order.date)}</td>
                         <td>{order.channel || order.platform}</td>
                         <td>{order.province || "-"}</td>
                         <td>{formatNumber(order.items)}</td>

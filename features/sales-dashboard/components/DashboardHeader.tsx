@@ -1,31 +1,30 @@
 "use client";
 
+import { PageHeader } from "@/components/layout/PageHeader";
 import { formatRange } from "../lib/dashboard";
 import type { SalesRange } from "../types/salesDashboard";
 
-/** Executive header of the dashboard: range, channel and PDPA state. */
+/**
+ * Page header of the dashboard, built on the shared PageHeader so it matches
+ * every other backoffice screen. The range and the PDPA state sit in the
+ * actions slot, where the other pages put their buttons.
+ */
 export function DashboardHeader({ range, masked }: { range?: SalesRange; masked?: boolean }) {
   return (
-    <div className="top-header">
-      <div className="container">
-        <div className="header-content">
-          <div className="header-brand">
-            <div className="header-logo-badge" aria-hidden>
-              📊
-            </div>
-            <div>
-              <h1 className="header-title">ยอดขายและพฤติกรรมลูกค้า</h1>
-              <p className="header-subtitle">Shopee · TikTok · ข้อมูลจาก ERP แบบเรียลไทม์ (แคช 10 นาที)</p>
-            </div>
-          </div>
-          <div className="header-subtitle" style={{ textAlign: "right" }}>
-            <div>{range ? formatRange(range.from, range.to) : "—"}</div>
-            <div>
-              {range ? `${range.days} วัน` : ""} {masked ? "· ซ่อนข้อมูลส่วนบุคคล" : ""}
-            </div>
-          </div>
+    <PageHeader
+      title="สมาชิกและการแลกของรางวัล"
+      description="ผู้สมัคร LINE OA แยกเพศ อายุ และ SKU แรกที่กรอกรหัส"
+      actions={
+        <div className="text-right text-sm text-neutral-500">
+          <p className="font-medium text-neutral-700">
+            {range ? formatRange(range.from, range.to) : "—"}
+          </p>
+          <p className="mt-1 text-xs">
+            {range ? `${range.days} วัน` : ""}
+            {masked ? " · ซ่อนข้อมูลส่วนบุคคล" : ""}
+          </p>
         </div>
-      </div>
-    </div>
+      }
+    />
   );
 }

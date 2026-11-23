@@ -10,7 +10,6 @@ import { Loading } from "@/components/common/Loading";
 import { SearchPanel } from "@/components/common/SearchPanel";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { TwoColumnLayout } from "@/components/layout/TwoColumnLayout";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,12 +26,13 @@ import {
   EMPTY_REDEMPTION_FILTERS,
   NEXT_ACTION,
   REDEMPTION_STATUS_LABEL,
-  STATUS_VARIANT,
   type Redemption,
   type RedemptionFilters,
 } from "../types/reward";
 import { RewardForm } from "./RewardForm";
+import { RedemptionStatusCell } from "./RedemptionStatusCell";
 import { RedemptionMemberView } from "@/features/line-oa/components/RedemptionMemberView";
+import { ThaiDateRangeInput } from "@/components/form/ThaiDateRangeInput";
 
 /** Next-step and cancel buttons with the ship / cancel dialogs. */
 export function RedemptionActions({ rd }: { rd: Redemption }) {
@@ -121,9 +121,8 @@ export function RedemptionActions({ rd }: { rd: Redemption }) {
   );
 }
 
-const statusBadge = (rd: Redemption) => <Badge variant={STATUS_VARIANT[rd.status]}>{REDEMPTION_STATUS_LABEL[rd.status]}</Badge>;
-
-const redemptionColumns: Column<Redemption>[] = [
+function makeRedemptionColumns(canFulfill: boolean): Column<Redemption>[] {
+  return [
   { key: "redemptionNo", label: "เลขที่", render: (r) => <span className="font-mono">{r.redemptionNo}</span> },
   { key: "createdAt", label: "วันที่แลก", render: (r) => formatThaiDateTime(r.createdAt) },
   {
@@ -138,7 +137,11 @@ const redemptionColumns: Column<Redemption>[] = [
   { key: "rewardName", label: "ของรางวัล" },
   { key: "points", label: "แต้ม", render: (r) => r.points.toLocaleString("th-TH") },
   { key: "shipProvince", label: "จังหวัด" },
-  { key: "status", label: "สถานะ", render: statusBadge },
+  {
+    key: "status",
+    label: "สถานะ",
+    render: (r) => <RedemptionStatusCell rd={r} canFulfill={canFulfill} />,
+  },
   { key: "trackingNo", label: "เลขพัสดุ / เหตุผล", render: (r) => r.trackingNo || r.cancelReason || "—" },
   {
     key: "lineMessages",
@@ -147,7 +150,8 @@ const redemptionColumns: Column<Redemption>[] = [
       <RedemptionMemberView status={r.status} trackingNo={r.trackingNo} cancelReason={r.cancelReason} lineMessages={r.lineMessages} />
     ),
   },
-];
+  ];
+}
 
 type Draft = Pick<RedemptionFilters, "search" | "status" | "dateFrom" | "dateTo">;
 const toDraft = (f: RedemptionFilters): Draft => ({ search: f.search, status: f.status, dateFrom: f.dateFrom, dateTo: f.dateTo });
@@ -184,15 +188,19 @@ function RedemptionSearchPanel({ filters, onApply }: { filters: RedemptionFilter
             ))}
           </Select>
         </div>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="rd-from">ตั้งแต่</Label>
-            <Input id="rd-from" type="date" value={draft.dateFrom} onChange={(e) => set("dateFrom", e.target.value)} />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="rd-to">ถึง</Label>
-            <Input id="rd-to" type="date" value={draft.dateTo} onChange={(e) => set("dateTo", e.target.value)} />
-          </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="rd-range">วันที่แลก</Label>
+          <ThaiDateRangeInput
+            id="rd-range"
+            optional
+            emptyStartLabel="ทั้งหมด"
+            emptyEndLabel="ปัจจุบัน"
+            value={{ start: draft.dateFrom, end: draft.dateTo }}
+            onChange={(r) => {
+              set("dateFrom", r.start);
+              set("dateTo", r.end);
+            }}
+          />
         </div>
         {dateError && (
           <p role="alert" className="text-xs text-red-600">
@@ -211,6 +219,10 @@ function RedemptionSearchPanel({ filters, onApply }: { filters: RedemptionFilter
 export function RedemptionListView() {
   const [filters, setFilters] = useState<RedemptionFilters>({ ...EMPTY_REDEMPTION_FILTERS, status: "pending" });
   const list = useRedemptionList(filters);
+  const canFulfill = hasPermission(
+    useAuthStore((s) => s.session),
+    PERMISSIONS.redemptionsFulfill,
+  );
   return (
     <>
       <PageHeader
@@ -223,14 +235,13 @@ export function RedemptionListView() {
         content={
           <DataTable
             rows={list.data?.data ?? []}
-            columns={redemptionColumns}
+            columns={makeRedemptionColumns(canFulfill)}
             meta={list.data?.meta ?? { page: filters.page, limit: filters.limit, total: 0 }}
             isLoading={list.isLoading}
             isError={list.isError}
             onRetry={() => list.refetch()}
             onPageChange={(page) => setFilters((f) => ({ ...f, page }))}
             onLimitChange={(limit) => setFilters((f) => ({ ...f, limit, page: 1 }))}
-            actions={(rd) => <RedemptionActions rd={rd} />}
           />
         }
       />
@@ -247,7 +258,7 @@ export function MemberRedemptionsTab({ memberId }: { memberId: number }) {
   return (
     <DataTable
       rows={list.data?.data ?? []}
-      columns={redemptionColumns.filter((c) => c.key !== "memberCode")}
+      columns={makeRedemptionColumns(canFulfill).filter((c) => c.key !== "memberCode")}
       meta={list.data?.meta ?? { page, limit, total: 0 }}
       isLoading={list.isLoading}
       isError={list.isError}
@@ -257,7 +268,6 @@ export function MemberRedemptionsTab({ memberId }: { memberId: number }) {
         setLimit(l);
         setPage(1);
       }}
-      actions={canFulfill ? (rd) => <RedemptionActions rd={rd} /> : undefined}
     />
   );
 }

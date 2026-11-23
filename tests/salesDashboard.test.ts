@@ -110,6 +110,6 @@ describe("formatting", () => {
 
   it("shortens trend periods", () => {
     expect(shortPeriod("2026-W46")).toBe("W46");
-    expect(shortPeriod("2026-11")).toMatch(/26$/);
+    expect(shortPeriod("2026-11")).toBe("พ.ย. 69"); // Buddhist era
   });
 });

@@ -48,21 +48,18 @@ export function CustomerPanel({
 
   if (!showCustomers) {
     return (
-      <section className="tab-panel active">
-        <div className="container">
+      <div className="space-y-6">
           <div className="sd-empty">
             <h2>ต้องมีสิทธิ์ดูลูกค้ารายบุคคล</h2>
             <p>บัญชีนี้ดูได้เฉพาะภาพรวมยอดขาย ไม่สามารถเข้าถึงข้อมูลผู้ซื้อรายคนได้</p>
           </div>
-        </div>
-      </section>
+      </div>
     );
   }
 
   return (
-    <section className="tab-panel active">
-      <div className="container">
-        <div className="section-card" style={{ marginTop: 24 }}>
+    <div className="space-y-6">
+        <div className="section-card">
           <div className="section-title-wrap">
             <h3 className="chart-title">ลูกค้าในช่วงเวลาที่เลือก</h3>
             <p>
@@ -176,7 +173,6 @@ export function CustomerPanel({
             </div>
           </div>
         </div>
-      </div>
-    </section>
+    </div>
   );
 }

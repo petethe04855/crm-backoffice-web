@@ -23,6 +23,8 @@ import {
 } from "../schemas/couponForm";
 import { BENEFIT_LABEL, CHANNEL_LABEL, type Coupon } from "../types/coupon";
 import { mediaUrl } from "@/lib/media";
+import { ThaiDateInput } from "@/components/form/ThaiDateInput";
+import { ThaiDateRangeInput } from "@/components/form/ThaiDateRangeInput";
 
 function Field({ id, label, error, hint, children }: { id: string; label: string; error?: string; hint?: string; children: ReactNode }) {
   return (
@@ -182,14 +184,22 @@ export function CouponForm({ coupon, canManage, extraActions }: { coupon?: Coupo
               <Input id="cp-limit" inputMode="numeric" value={values.limitPerMember} onChange={(e) => set("limitPerMember", e.target.value)} />
             </Field>
           </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field id="cp-start" label="เปิดให้แลกตั้งแต่ (เว้นว่าง = ทันที)">
-              <Input id="cp-start" type="datetime-local" value={values.claimStart} onChange={(e) => set("claimStart", e.target.value)} />
-            </Field>
-            <Field id="cp-end" label="ปิดรับแลก (เว้นว่าง = ไม่มีกำหนด)" error={errors.claimEnd}>
-              <Input id="cp-end" type="datetime-local" value={values.claimEnd} onChange={(e) => set("claimEnd", e.target.value)} />
-            </Field>
-          </div>
+          <Field id="cp-claim" label="ช่วงเปิดให้แลก (เว้นว่าง = เปิดทันที / ไม่มีกำหนดปิด)" error={errors.claimEnd}>
+            <ThaiDateRangeInput
+              id="cp-claim"
+              withTime
+              optional
+              emptyStartLabel="ทันที"
+              emptyEndLabel="ไม่มีกำหนด"
+              startTimeLabel="เปิดเวลา"
+              endTimeLabel="ปิดเวลา"
+              value={{ start: values.claimStart, end: values.claimEnd }}
+              onChange={(r) => {
+                set("claimStart", r.start);
+                set("claimEnd", r.end);
+              }}
+            />
+          </Field>
           <fieldset className="space-y-2">
             <legend className="text-sm font-medium">วันหมดอายุของคูปอง</legend>
             <label className="flex items-center gap-2 text-sm">
@@ -208,12 +218,12 @@ export function CouponForm({ coupon, canManage, extraActions }: { coupon?: Coupo
                   <Input id="cp-days" inputMode="numeric" value={values.validDays} onChange={(e) => set("validDays", e.target.value)} />
                 </Field>
                 <Field id="cp-cap" label="แต่ไม่เกินวันที่ (ไม่บังคับ)" error={errors.expiresAt}>
-                  <Input id="cp-cap" type="datetime-local" value={values.expiresAt} onChange={(e) => set("expiresAt", e.target.value)} />
+                  <ThaiDateInput id="cp-cap" kind="datetime" value={values.expiresAt} onChange={(v) => set("expiresAt", v)} />
                 </Field>
               </>
             ) : (
               <Field id="cp-exp" label="หมดอายุวันที่" error={errors.expiresAt}>
-                <Input id="cp-exp" type="datetime-local" value={values.expiresAt} onChange={(e) => set("expiresAt", e.target.value)} />
+                <ThaiDateInput id="cp-exp" kind="datetime" value={values.expiresAt} onChange={(v) => set("expiresAt", v)} />
               </Field>
             )}
           </div>

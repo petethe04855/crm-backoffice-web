@@ -17,6 +17,7 @@ import {
   type EarnRuleFormValues,
 } from "../schemas/pointRuleForms";
 import { EARN_RULE_TRIGGER_LABEL, EARN_RULE_TYPE_LABEL, type EarnRule } from "../types/pointRules";
+import { ThaiDateRangeInput } from "@/components/form/ThaiDateRangeInput";
 
 function FieldError({ message }: { message?: string }) {
   if (!message) return null;
@@ -155,16 +156,21 @@ export function EarnRuleDialog({ rule, open, onClose }: { rule: EarnRule | null;
           </>
         )}
 
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <Label htmlFor="er-start">เริ่ม (เว้นว่าง = ทันที)</Label>
-            <Input id="er-start" type="datetime-local" value={values.startAt} onChange={(e) => set("startAt", e.target.value)} />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="er-end">สิ้นสุด (เว้นว่าง = ไม่มีกำหนด)</Label>
-            <Input id="er-end" type="datetime-local" value={values.endAt} onChange={(e) => set("endAt", e.target.value)} />
-            <FieldError message={errors.endAt} />
-          </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="er-range">ช่วงเวลาที่ใช้กติกา (เว้นว่าง = เริ่มทันที / ไม่มีกำหนด)</Label>
+          <ThaiDateRangeInput
+            id="er-range"
+            withTime
+            optional
+            emptyStartLabel="ทันที"
+            emptyEndLabel="ไม่มีกำหนด"
+            value={{ start: values.startAt, end: values.endAt }}
+            onChange={(r) => {
+              set("startAt", r.start);
+              set("endAt", r.end);
+            }}
+          />
+          <FieldError message={errors.endAt} />
         </div>
 
         <div className="grid grid-cols-2 gap-3">

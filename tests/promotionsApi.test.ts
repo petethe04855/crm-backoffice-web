@@ -13,7 +13,7 @@ describe("buildPromotionParams", () => {
         ...EMPTY_PROMOTION_FILTERS,
         search: "  โปร  ",
         month: "2026-11",
-        status: "published",
+        status: "public",
         placement: "home_banner",
         page: 2,
         limit: 50,
@@ -23,7 +23,7 @@ describe("buildPromotionParams", () => {
       limit: 50,
       search: "โปร",
       month: "2026-11",
-      status: "published",
+      status: "public",
       placement: "home_banner",
     });
   });

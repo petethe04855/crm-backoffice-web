@@ -5,17 +5,17 @@
  */
 
     .sd-root {
-      --bg-primary: #0b0f19;
-      --bg-secondary: #111827;
-      --bg-card: rgba(23, 32, 54, 0.75);
-      --bg-card-hover: rgba(30, 41, 69, 0.9);
-      --border-color: rgba(255, 255, 255, 0.08);
-      --border-highlight: rgba(245, 158, 11, 0.35);
-      --text-primary: #f9fafb;
-      --text-secondary: #9ca3af;
-      --text-muted: #6b7280;
-      --accent-gold: #f59e0b;
-      --accent-gold-light: #fbbf24;
+      --bg-primary: hsl(var(--background));
+      --bg-secondary: #fafafa;
+      --bg-card: #ffffff;
+      --bg-card-hover: #fafafa;
+      --border-color: hsl(var(--border));
+      --border-highlight: #a1a1aa;
+      --text-primary: hsl(var(--foreground));
+      --text-secondary: hsl(var(--muted-foreground));
+      --text-muted: #a1a1aa;
+      --accent-gold: #18181b;
+      --accent-gold-light: #3f3f46;
       --accent-blue: #3b82f6;
       --accent-indigo: #6366f1;
       --accent-emerald: #10b981;
@@ -28,37 +28,32 @@
       --radius-sm: 8px;
       --radius-md: 14px;
       --radius-lg: 20px;
-      --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.2);
-      --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
-      --shadow-gold: 0 10px 30px rgba(245, 158, 11, 0.25);
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.04);
+      --shadow-gold: 0 1px 3px rgba(0, 0, 0, 0.04);
     }
 
-    .sd-root * { box-sizing: border-box; margin: 0; padding: 0; }
+    /* No universal reset here: the dashboard shares Tailwind components with the
+       rest of the backoffice, and a `*` reset would strip their spacing. */
 
     .sd-root {
       font-family: inherit;
-      background-color: var(--bg-primary);
       color: var(--text-primary);
       line-height: 1.6;
-      padding: 0 0 40px 0;
-      background-image: 
-        radial-gradient(circle at 10% 15%, rgba(255, 107, 0, 0.08) 0%, transparent 40%),
-        radial-gradient(circle at 90% 10%, rgba(0, 181, 216, 0.09) 0%, transparent 45%),
-        radial-gradient(circle at 50% 85%, rgba(16, 185, 129, 0.07) 0%, transparent 50%);
-      background-attachment: fixed;
-      min-height: 100vh;
     }
 
+    /* Panels render inside TwoColumnLayout's content column, which already has
+       the page padding; .container is kept as a plain full-width block. */
     .sd-root .container {
-      max-width: 1480px;
-      margin: 0 auto;
-      padding: 0 20px;
+      max-width: none;
+      margin: 0;
+      padding: 0;
     }
 
     /* ==================== TOP EXECUTIVE HEADER ==================== */
     .sd-root .top-header {
-      background: linear-gradient(135deg, rgba(30, 41, 69, 0.85) 0%, rgba(17, 24, 39, 0.95) 100%);
-      backdrop-filter: blur(16px);
+      background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
+      
       border-bottom: 1px solid var(--border-color);
       padding: 20px 0;
       margin-bottom: 0;
@@ -69,7 +64,7 @@
       content: "";
       position: absolute;
       bottom: 0; left: 0; right: 0; height: 2px;
-      background: linear-gradient(90deg, #FF6B00, #f59e0b, #10b981, #00B5D8, #8b5cf6, #fe2c55);
+      background: hsl(var(--border));
     }
 
     .sd-root .header-content {
@@ -102,7 +97,7 @@
       font-size: 1.5rem;
       font-weight: 800;
       letter-spacing: -0.02em;
-      color: #fff;
+      color: var(--text-primary);
     }
 
     .sd-root .header-subtitle {
@@ -112,13 +107,13 @@
 
     /* ==================== MAIN TABS NAVIGATION ==================== */
     .sd-root .nav-tabs-wrapper {
-      background: rgba(17, 24, 39, 0.92);
-      backdrop-filter: blur(16px);
+      background: #ffffff;
+      
       border-bottom: 1px solid var(--border-color);
       position: sticky;
       top: 0;
       z-index: 1000;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.13);
     }
 
     .sd-root .nav-tabs {
@@ -133,7 +128,7 @@
     .sd-root .nav-tab-btn {
       background: transparent;
       border: 1px solid transparent;
-      color: #9ca3af;
+      color: #71717a;
       padding: 10px 18px;
       border-radius: var(--radius-sm);
       font-size: 0.88rem;
@@ -148,8 +143,8 @@
     }
 
     .sd-root .nav-tab-btn:hover {
-      color: #fff;
-      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-primary);
+      background: rgba(24, 24, 27, 0.05);
     }
 
     .sd-root .nav-tab-btn.active {
@@ -160,44 +155,44 @@
     }
 
     .sd-root .nav-tab-btn.tab-sales.active {
-      background: rgba(245, 158, 11, 0.18);
-      border-color: rgba(245, 158, 11, 0.4);
-      color: #fbbf24;
+      background: rgba(24, 24, 27, 0.18);
+      border-color: rgba(24, 24, 27, 0.4);
+      color: #b45309;
     }
 
     .sd-root .nav-tab-btn.tab-cust.active {
       background: rgba(244, 63, 94, 0.18);
       border-color: rgba(244, 63, 94, 0.4);
-      color: #fb7185;
+      color: #be123c;
     }
 
     .sd-root .nav-tab-btn.tab-behav.active {
       background: rgba(16, 185, 129, 0.18);
       border-color: rgba(16, 185, 129, 0.4);
-      color: #34d399;
+      color: #047857;
     }
 
     
     .sd-root .nav-tab-btn.tab-flavors.active {
       background: rgba(139, 92, 246, 0.2);
       border-color: rgba(139, 92, 246, 0.45);
-      color: #c084fc;
+      color: #7e22ce;
     }
 
     .sd-root .nav-tab-btn.tab-geo.active {
       background: rgba(6, 182, 212, 0.18);
       border-color: rgba(6, 182, 212, 0.4);
-      color: #38bdf8;
+      color: #0369a1;
     }
 
     /* ==================== COMPACT STICKY COMMAND BAR (DUAL-MODE FILTER) ==================== */
     .sd-root .filter-sticky-bar {
-      background: rgba(15, 23, 42, 0.95);
-      backdrop-filter: blur(20px);
+      background: #ffffff;
+      
       border-bottom: 1px solid var(--border-color);
       padding: 12px 0;
       margin-bottom: 24px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
       position: sticky;
       top: 55px;
       z-index: 990;
@@ -221,7 +216,7 @@
     /* Mode Switcher Segment */
     .sd-root .mode-switch-group {
       display: inline-flex;
-      background: rgba(0, 0, 0, 0.4);
+      background: rgba(0, 0, 0, 0.13);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-sm);
       padding: 3px;
@@ -261,7 +256,7 @@
     .sd-root .date-input-chip {
       display: inline-flex;
       align-items: center;
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(24, 24, 27, 0.05);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-sm);
       padding: 4px 10px;
@@ -278,7 +273,7 @@
     .sd-root .date-input-chip input[type="date"] {
       background: transparent;
       border: none;
-      color: #fff;
+      color: var(--text-primary);
       font-family: inherit;
       font-size: 0.8rem;
       cursor: pointer;
@@ -297,7 +292,7 @@
     }
 
     .sd-root .preset-chip {
-      background: rgba(255, 255, 255, 0.04);
+      background: rgba(24, 24, 27, 0.04);
       border: 1px solid var(--border-color);
       color: var(--text-secondary);
       padding: 4px 10px;
@@ -310,13 +305,13 @@
     }
 
     .sd-root .preset-chip:hover {
-      color: #fff;
-      background: rgba(255, 255, 255, 0.1);
-      border-color: rgba(255, 255, 255, 0.2);
+      color: var(--text-primary);
+      background: rgba(24, 24, 27, 0.1);
+      border-color: rgba(24, 24, 27, 0.2);
     }
 
     .sd-root .preset-chip.active {
-      background: rgba(245, 158, 11, 0.18);
+      background: rgba(24, 24, 27, 0.18);
       border-color: var(--accent-gold);
       color: var(--accent-gold-light);
     }
@@ -330,9 +325,9 @@
     }
 
     .sd-root .weekly-select {
-      background: rgba(17, 24, 39, 0.9);
+      background: #ffffff;
       border: 1px solid var(--accent-gold);
-      color: #fff;
+      color: var(--text-primary);
       padding: 6px 14px;
       border-radius: var(--radius-sm);
       font-size: 0.82rem;
@@ -341,13 +336,13 @@
       cursor: pointer;
       outline: none;
       max-width: 380px;
-      box-shadow: 0 0 12px rgba(245, 158, 11, 0.2);
+      box-shadow: 0 0 12px rgba(24, 24, 27, 0.2);
     }
 
     .sd-root .weekly-nav-btn {
-      background: rgba(255, 255, 255, 0.06);
+      background: rgba(24, 24, 27, 0.06);
       border: 1px solid var(--border-color);
-      color: #e5e7eb;
+      color: #27272a;
       padding: 6px 10px;
       border-radius: 6px;
       font-size: 0.78rem;
@@ -358,14 +353,14 @@
     }
 
     .sd-root .weekly-nav-btn:hover {
-      background: rgba(255, 255, 255, 0.12);
-      color: #fff;
+      background: rgba(24, 24, 27, 0.12);
+      color: var(--text-primary);
     }
 
     /* Platform Pills */
     .sd-root .platform-segment {
       display: inline-flex;
-      background: rgba(0, 0, 0, 0.35);
+      background: rgba(0, 0, 0, 0.12);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-sm);
       padding: 3px;
@@ -389,12 +384,12 @@
       gap: 4px;
     }
 
-    .sd-root .platform-pill:hover { color: #fff; }
+    .sd-root .platform-pill:hover { color: var(--text-primary); }
 
     .sd-root .platform-pill.active {
-      background: rgba(255, 255, 255, 0.14);
+      background: rgba(24, 24, 27, 0.14);
       color: #fff;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     }
 
     .sd-root .platform-pill.tab-shopee.active {
@@ -417,8 +412,8 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      background: rgba(0, 0, 0, 0.4);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(0, 0, 0, 0.13);
+      border: 1px solid rgba(24, 24, 27, 0.08);
       border-radius: var(--radius-sm);
       padding: 6px 14px;
       font-size: 0.8rem;
@@ -439,20 +434,20 @@
       border-radius: 4px;
       transition: all 0.15s ease;
     }
-    .sd-root .btn-reset-filter:hover { color: #f87171; background: rgba(248, 113, 113, 0.1); }
+    .sd-root .btn-reset-filter:hover { color: #b91c1c; background: rgba(248, 113, 113, 0.1); }
 
     /* ==================== WEEKLY FOCUS BANNER ==================== */
     .sd-root .weekly-focus-banner {
       display: none;
-      background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(244, 63, 94, 0.15) 100%);
-      border: 1px solid rgba(245, 158, 11, 0.4);
+      background: linear-gradient(135deg, rgba(24, 24, 27, 0.15) 0%, rgba(244, 63, 94, 0.15) 100%);
+      border: 1px solid rgba(24, 24, 27, 0.4);
       border-radius: var(--radius-md);
       padding: 12px 18px;
       margin-bottom: 20px;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      box-shadow: 0 4px 16px rgba(245, 158, 11, 0.15);
+      box-shadow: 0 4px 16px rgba(24, 24, 27, 0.15);
       animation: sdFadeIn 0.3s ease;
     }
 
@@ -480,7 +475,7 @@
     }
 
     .sd-root .focus-title {
-      color: #fff;
+      color: var(--text-primary);
       font-weight: 700;
     }
 
@@ -490,9 +485,9 @@
     }
 
     .sd-root .btn-exit-focus {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #fff;
+      background: rgba(24, 24, 27, 0.1);
+      border: 1px solid rgba(24, 24, 27, 0.2);
+      color: var(--text-primary);
       padding: 5px 12px;
       border-radius: 6px;
       font-size: 0.78rem;
@@ -520,9 +515,9 @@
       white-space: nowrap;
     }
     .sd-root .flavor-chicken {
-      background: rgba(245, 158, 11, 0.15);
-      color: #fbbf24;
-      border: 1px solid rgba(245, 158, 11, 0.35);
+      background: rgba(24, 24, 27, 0.15);
+      color: #b45309;
+      border: 1px solid rgba(24, 24, 27, 0.35);
     }
     .sd-root .flavor-tuna {
       background: rgba(0, 181, 216, 0.15);
@@ -531,12 +526,12 @@
     }
     .sd-root .flavor-rabbit {
       background: rgba(236, 72, 153, 0.15);
-      color: #f472b6;
+      color: #be185d;
       border: 1px solid rgba(236, 72, 153, 0.35);
     }
     .sd-root .flavor-total {
       background: rgba(139, 92, 246, 0.15);
-      color: #a78bfa;
+      color: #6d28d9;
       border: 1px solid rgba(139, 92, 246, 0.35);
     }
     .sd-root .flavor-dist-bar {
@@ -544,7 +539,7 @@
       height: 8px;
       border-radius: 4px;
       overflow: hidden;
-      background: rgba(255, 255, 255, 0.06);
+      background: rgba(24, 24, 27, 0.06);
       width: 100%;
       min-width: 90px;
     }
@@ -562,16 +557,16 @@
       padding: 10px 14px;
       border-radius: 10px;
       font-size: 0.85rem;
-      background: rgba(17, 24, 39, 0.7);
+      background: #ffffff;
       border: 1px solid var(--border-color);
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    .sd-root .modal-flavor-card.flavor-c { border-left: 3px solid #f59e0b; color: #fbbf24; }
+    .sd-root .modal-flavor-card.flavor-c { border-left: 3px solid #f59e0b; color: #b45309; }
     .sd-root .modal-flavor-card.flavor-t { border-left: 3px solid #00B5D8; color: #00B5D8; }
-    .sd-root .modal-flavor-card.flavor-r { border-left: 3px solid #ec4899; color: #f472b6; }
-    .sd-root .modal-flavor-card.flavor-all { border-left: 3px solid #8b5cf6; color: #a78bfa; }
+    .sd-root .modal-flavor-card.flavor-r { border-left: 3px solid #ec4899; color: #be185d; }
+    .sd-root .modal-flavor-card.flavor-all { border-left: 3px solid #8b5cf6; color: #6d28d9; }
 
     .sd-root .table-flavor th,
 .sd-root .table-flavor td {
@@ -586,9 +581,9 @@
       position: sticky;
       top: 0;
       z-index: 10;
-      background: #0d1527;
-      border-bottom: 2px solid rgba(255, 255, 255, 0.15);
-      box-shadow: 0 3px 6px -1px rgba(0, 0, 0, 0.6);
+      background: #fafafa;
+      border-bottom: 2px solid rgba(24, 24, 27, 0.15);
+      box-shadow: 0 3px 6px -1px rgba(0, 0, 0, 0.2);
     }
 
     /* ==================== PRODUCT MIX DECISION VIEW ==================== */
@@ -600,7 +595,7 @@
       border-radius: 20px;
       padding: 22px;
       margin-bottom: 18px;
-      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.24);
+      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.08);
     }
 
     .sd-root .product-mix-toolbar {
@@ -612,7 +607,7 @@
     }
 
     .sd-root .product-mix-eyebrow {
-      color: #c4b5fd;
+      color: #6d28d9;
       font-size: 0.72rem;
       font-weight: 800;
       letter-spacing: 0.08em;
@@ -620,7 +615,7 @@
     }
 
     .sd-root .product-mix-title {
-      color: #fff;
+      color: var(--text-primary);
       font-size: 1.35rem;
       font-weight: 800;
       line-height: 1.35;
@@ -637,7 +632,7 @@
       display: inline-flex;
       gap: 4px;
       padding: 4px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(24, 24, 27, 0.1);
       border-radius: 12px;
       background: rgba(4, 8, 16, 0.6);
     }
@@ -657,7 +652,7 @@
     }
 
     .sd-root .product-view-btn:hover {
-      color: #fff;
+      color: var(--text-primary);
       transform: translateY(-1px);
     }
 
@@ -677,9 +672,9 @@
     .sd-root .product-insight {
       min-height: 86px;
       padding: 13px 15px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(24, 24, 27, 0.08);
       border-radius: 14px;
-      background: rgba(8, 13, 24, 0.58);
+      background: rgba(0, 0, 0, 0.12);
     }
 
     .sd-root .product-insight-label {
@@ -689,7 +684,7 @@
     }
 
     .sd-root .product-insight-value {
-      color: #fff;
+      color: var(--text-primary);
       font-size: 0.92rem;
       font-weight: 800;
       line-height: 1.45;
@@ -705,9 +700,9 @@
       position: relative;
       overflow: hidden;
       padding: 15px 17px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(24, 24, 27, 0.08);
       border-radius: 14px;
-      background: rgba(8, 13, 24, 0.72);
+      background: rgba(0, 0, 0, 0.14);
     }
 
     .sd-root .product-mix-row.is-leader {
@@ -738,18 +733,18 @@
       place-items: center;
       border-radius: 10px;
       color: #fff;
-      background: rgba(255, 255, 255, 0.08);
+      background: rgba(24, 24, 27, 0.08);
       font-size: 0.78rem;
       font-weight: 800;
     }
 
     .sd-root .is-leader .product-rank {
-      color: #1a102d;
-      background: #c4b5fd;
+      color: #ffffff;
+      background: #6d28d9;
     }
 
     .sd-root .product-name {
-      color: #fff;
+      color: var(--text-primary);
       font-size: 0.92rem;
       font-weight: 800;
     }
@@ -761,7 +756,7 @@
     }
 
     .sd-root .product-share {
-      color: #fff;
+      color: var(--text-primary);
       font-size: 1.2rem;
       font-weight: 900;
       text-align: right;
@@ -775,26 +770,26 @@
       font-weight: 700;
     }
 
-    .sd-root .product-change.up { color: #34d399; }
-    .sd-root .product-change.down { color: #fb7185; }
+    .sd-root .product-change.up { color: #047857; }
+    .sd-root .product-change.down { color: #be123c; }
     .sd-root .product-change.neutral { color: var(--text-secondary); }
 
     .sd-root .product-empty {
       padding: 30px 18px;
       text-align: center;
       color: var(--text-secondary);
-      border: 1px dashed rgba(255, 255, 255, 0.14);
+      border: 1px dashed rgba(24, 24, 27, 0.14);
       border-radius: 14px;
-      background: rgba(8, 13, 24, 0.42);
+      background: rgba(0, 0, 0, 0.08);
     }
 
     .sd-root .product-monthly-shell {
       margin-bottom: 18px;
       overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.09);
+      border: 1px solid rgba(24, 24, 27, 0.09);
       border-radius: 18px;
       background: rgba(13, 20, 35, 0.82);
-      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.18);
+      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.06);
     }
 
     .sd-root .product-monthly-header {
@@ -803,11 +798,11 @@
       justify-content: space-between;
       gap: 14px;
       padding: 18px 20px 15px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      border-bottom: 1px solid rgba(24, 24, 27, 0.08);
     }
 
     .sd-root .product-monthly-title {
-      color: #fff;
+      color: var(--text-primary);
       font-size: 1rem;
       font-weight: 800;
     }
@@ -823,7 +818,7 @@
       padding: 5px 9px;
       border-radius: 999px;
       background: rgba(139, 92, 246, 0.12);
-      color: #c4b5fd;
+      color: #6d28d9;
       font-weight: 700;
     }
 
@@ -842,13 +837,13 @@
     .sd-root .product-monthly-table th,
 .sd-root .product-monthly-table td {
       padding: 13px 16px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      border-bottom: 1px solid rgba(24, 24, 27, 0.06);
       text-align: center;
       white-space: nowrap;
     }
 
     .sd-root .product-monthly-table th {
-      color: #aeb8cb;
+      color: #71717a;
       background: rgba(4, 8, 16, 0.42);
       font-size: 0.72rem;
       font-weight: 800;
@@ -860,37 +855,37 @@
       left: 0;
       z-index: 2;
       text-align: left;
-      background: #11192a;
+      background: #fafafa;
       box-shadow: 8px 0 16px rgba(5, 9, 17, 0.22);
     }
 
     .sd-root .product-monthly-table tbody tr:hover td {
-      background-color: rgba(255, 255, 255, 0.025);
+      background-color: rgba(24, 24, 27, 0.025);
     }
 
     .sd-root .product-monthly-table tbody tr:hover td:first-child {
-      background-color: #162036;
+      background-color: #fafafa;
     }
 
     .sd-root .product-monthly-table tfoot td {
       border-bottom: 0;
       background: rgba(139, 92, 246, 0.09);
-      color: #fff;
+      color: var(--text-primary);
       font-weight: 800;
     }
 
     .sd-root .product-monthly-table tfoot td:first-child {
-      background: #191a35;
+      background: #fafafa;
     }
 
     .sd-root .monthly-month {
-      color: #fff;
+      color: var(--text-primary);
       font-size: 0.84rem;
       font-weight: 800;
     }
 
     .sd-root .monthly-units {
-      color: #fff;
+      color: var(--text-primary);
       font-size: 0.9rem;
       font-weight: 800;
     }
@@ -909,7 +904,7 @@
       padding: 4px 8px;
       border: 1px solid rgba(167, 139, 250, 0.22);
       border-radius: 999px;
-      color: #ddd6fe;
+      color: #6d28d9;
       background: rgba(139, 92, 246, 0.1);
       font-size: 0.72rem;
       font-weight: 700;
@@ -922,13 +917,13 @@
 
     .sd-root .deep-dive {
       margin-top: 14px;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      border-top: 1px solid rgba(24, 24, 27, 0.08);
     }
 
     .sd-root .deep-dive > summary {
       list-style: none;
       cursor: pointer;
-      color: #c4b5fd;
+      color: #6d28d9;
       font-size: 0.84rem;
       font-weight: 700;
       padding: 15px 2px;
@@ -976,7 +971,7 @@
     /* ==================== COMMON CARDS & LAYOUTS ==================== */
     .sd-root .section-card {
       background: var(--bg-card);
-      backdrop-filter: blur(16px);
+      
       border: 1px solid var(--border-color);
       border-radius: var(--radius-lg);
       padding: 24px;
@@ -991,7 +986,7 @@
     .sd-root .section-title-wrap h2 {
       font-size: 1.28rem;
       font-weight: 800;
-      color: #fff;
+      color: var(--text-primary);
       display: flex;
       align-items: center;
       gap: 10px;
@@ -1012,7 +1007,7 @@
     }
 
     .sd-root .kpi-card {
-      background: rgba(17, 24, 39, 0.75);
+      background: #ffffff;
       border: 1px solid var(--border-color);
       border-radius: var(--radius-md);
       padding: 18px 20px;
@@ -1020,7 +1015,7 @@
     }
 
     .sd-root .kpi-card:hover {
-      border-color: rgba(255, 255, 255, 0.2);
+      border-color: rgba(24, 24, 27, 0.2);
       transform: translateY(-2px);
     }
 
@@ -1049,7 +1044,7 @@
       font-size: 1rem;
     }
 
-    .sd-root .icon-gold { background: rgba(245, 158, 11, 0.15); color: var(--accent-gold); }
+    .sd-root .icon-gold { background: rgba(24, 24, 27, 0.15); color: var(--accent-gold); }
     .sd-root .icon-blue { background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); }
     .sd-root .icon-emerald { background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); }
     .sd-root .icon-purple { background: rgba(139, 92, 246, 0.15); color: var(--accent-purple); }
@@ -1059,7 +1054,7 @@
     .sd-root .kpi-value {
       font-size: 1.8rem;
       font-weight: 800;
-      color: #fff;
+      color: var(--text-primary);
       line-height: 1.2;
       margin-bottom: 4px;
     }
@@ -1079,7 +1074,7 @@
     }
 
     .sd-root .chart-card {
-      background: rgba(17, 24, 39, 0.75);
+      background: #ffffff;
       border: 1px solid var(--border-color);
       border-radius: var(--radius-md);
       padding: 20px;
@@ -1097,7 +1092,7 @@
     .sd-root .chart-title {
       font-size: 1rem;
       font-weight: 700;
-      color: #fff;
+      color: var(--text-primary);
       margin-bottom: 2px;
     }
 
@@ -1115,7 +1110,7 @@
     /* Buttons inside Card */
     .sd-root .filter-btn-group {
       display: inline-flex;
-      background: rgba(0, 0, 0, 0.3);
+      background: rgba(0, 0, 0, 0.1);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-sm);
       padding: 3px;
@@ -1135,16 +1130,16 @@
       transition: all 0.15s ease;
     }
 
-    .sd-root .filter-btn:hover { color: #fff; }
+    .sd-root .filter-btn:hover { color: var(--text-primary); }
     .sd-root .filter-btn.active {
-      background: rgba(255, 255, 255, 0.14);
+      background: rgba(24, 24, 27, 0.14);
       color: #fff;
     }
 
     /* Weekly Behavior Impact Dynamic Card */
     .sd-root .weekly-impact-card {
       display: none;
-      background: linear-gradient(135deg, rgba(23, 32, 54, 0.9) 0%, rgba(30, 41, 69, 0.9) 100%);
+      background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
       border: 1px solid rgba(0, 181, 216, 0.4);
       border-radius: var(--radius-md);
       padding: 18px 22px;
@@ -1162,7 +1157,7 @@
     }
 
     .sd-root .impact-stat-box {
-      background: rgba(0, 0, 0, 0.3);
+      background: rgba(0, 0, 0, 0.1);
       border-radius: 8px;
       padding: 12px 14px;
       border-left: 3px solid #00B5D8;
@@ -1177,12 +1172,12 @@
     .sd-root .impact-stat-value {
       font-size: 1.15rem;
       font-weight: 700;
-      color: #fff;
+      color: var(--text-primary);
     }
 
     /* Champion Spotlight */
     .sd-root .spotlight-card {
-      background: linear-gradient(135deg, rgba(30, 41, 69, 0.9) 0%, rgba(20, 28, 48, 0.95) 100%);
+      background: linear-gradient(135deg, #ffffff 0%, rgba(20, 28, 48, 0.95) 100%);
       border: 1px solid var(--border-highlight);
       border-radius: var(--radius-lg);
       padding: 24px;
@@ -1207,8 +1202,8 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: rgba(245, 158, 11, 0.2);
-      border: 1px solid rgba(245, 158, 11, 0.4);
+      background: rgba(24, 24, 27, 0.2);
+      border: 1px solid rgba(24, 24, 27, 0.4);
       color: var(--accent-gold-light);
       padding: 4px 12px;
       border-radius: 999px;
@@ -1220,7 +1215,7 @@
     .sd-root .champion-username {
       font-size: 1.6rem;
       font-weight: 800;
-      color: #fff;
+      color: var(--text-primary);
       display: flex;
       align-items: center;
       gap: 10px;
@@ -1241,10 +1236,10 @@
     }
 
     .sd-root .champ-stat {
-      background: rgba(0, 0, 0, 0.35);
+      background: rgba(0, 0, 0, 0.12);
       border-radius: 10px;
       padding: 10px 12px;
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(24, 24, 27, 0.05);
     }
 
     .sd-root .champ-stat-label {
@@ -1256,7 +1251,7 @@
     .sd-root .champ-stat-value {
       font-size: 1.25rem;
       font-weight: 700;
-      color: #fff;
+      color: var(--text-primary);
     }
 
     .sd-root .champ-detail-list {
@@ -1268,7 +1263,7 @@
     }
 
     .sd-root .fav-products-box {
-      background: rgba(0, 0, 0, 0.3);
+      background: rgba(0, 0, 0, 0.1);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-md);
       padding: 16px;
@@ -1277,7 +1272,7 @@
     .sd-root .box-title {
       font-size: 0.85rem;
       font-weight: 700;
-      color: #fff;
+      color: var(--text-primary);
       margin-bottom: 12px;
       display: flex;
       align-items: center;
@@ -1289,13 +1284,13 @@
       justify-content: space-between;
       align-items: center;
       padding: 8px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid rgba(24, 24, 27, 0.05);
       font-size: 0.8rem;
     }
     .sd-root .fav-item:last-child { border-bottom: none; }
 
     .sd-root .fav-item-name {
-      color: #e5e7eb;
+      color: #27272a;
       max-width: 260px;
       white-space: nowrap;
       overflow: hidden;
@@ -1313,7 +1308,7 @@
       padding: 12px 14px;
       border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
       font-size: 0.82rem;
-      color: #e0e7ff;
+      color: #4338ca;
       line-height: 1.5;
     }
 
@@ -1328,10 +1323,10 @@
     }
 
     .sd-root .search-box {
-      background: rgba(17, 24, 39, 0.8);
+      background: #ffffff;
       border: 1px solid var(--border-color);
       border-radius: var(--radius-sm);
-      color: #fff;
+      color: var(--text-primary);
       padding: 7px 14px;
       font-size: 0.82rem;
       font-family: inherit;
@@ -1345,7 +1340,7 @@
       overflow-x: auto;
       border: 1px solid var(--border-color);
       border-radius: var(--radius-md);
-      background: rgba(17, 24, 39, 0.6);
+      background: #ffffff;
     }
 
     .sd-root table {
@@ -1366,28 +1361,28 @@
       position: sticky;
       top: 0;
       z-index: 10;
-      background: #0d1527;
+      background: #fafafa;
       color: var(--text-secondary);
       font-weight: 700;
       padding: 12px 14px;
       border-bottom: 2px solid var(--border-color);
-      box-shadow: 0 3px 6px -1px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 3px 6px -1px rgba(0, 0, 0, 0.17);
       white-space: nowrap;
       user-select: none;
     }
 
     .sd-root th.sortable { cursor: pointer; }
-    .sd-root th.sortable:hover { color: #fff; background: #1e293b; }
+    .sd-root th.sortable:hover { color: var(--text-primary); background: #fafafa; }
 
     .sd-root td {
       padding: 11px 14px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-      color: #e5e7eb;
+      border-bottom: 1px solid rgba(24, 24, 27, 0.04);
+      color: #27272a;
       vertical-align: middle;
     }
 
     .sd-root tbody tr:hover {
-      background: rgba(255, 255, 255, 0.03);
+      background: rgba(24, 24, 27, 0.03);
     }
 
     .sd-root .money-val {
@@ -1408,17 +1403,17 @@
       white-space: nowrap;
     }
 
-    .sd-root .badge-event-dd { background: rgba(244, 63, 94, 0.2); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.4); }
-    .sd-root .badge-event-payday { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .sd-root .badge-event-dd { background: rgba(244, 63, 94, 0.2); color: #be123c; border: 1px solid rgba(244, 63, 94, 0.4); }
+    .sd-root .badge-event-payday { background: rgba(24, 24, 27, 0.2); color: #b45309; border: 1px solid rgba(24, 24, 27, 0.4); }
     .sd-root .badge-event-live { background: rgba(0, 181, 216, 0.2); color: #00B5D8; border: 1px solid rgba(0, 181, 216, 0.4); font-weight: 700; }
-    .sd-root .badge-event-regular { background: rgba(255, 255, 255, 0.06); color: #9ca3af; }
+    .sd-root .badge-event-regular { background: rgba(24, 24, 27, 0.06); color: #71717a; }
 
-    .sd-root .badge-wow-up { color: #34d399; font-weight: 700; }
-    .sd-root .badge-wow-down { color: #f87171; font-weight: 700; }
+    .sd-root .badge-wow-up { color: #047857; font-weight: 700; }
+    .sd-root .badge-wow-down { color: #b91c1c; font-weight: 700; }
 
     .sd-root .badge-set-tag {
       background: rgba(99, 102, 241, 0.15);
-      color: #a5b4fc;
+      color: #4338ca;
       border: 1px solid rgba(99, 102, 241, 0.3);
       padding: 2px 7px;
       border-radius: 4px;
@@ -1427,19 +1422,19 @@
       margin: 1px;
       font-weight: 600;
     }
-    .sd-root .badge-set-10 { background: rgba(244, 63, 94, 0.18); color: #fda4af; border-color: rgba(244, 63, 94, 0.35); }
-    .sd-root .badge-set-5 { background: rgba(245, 158, 11, 0.18); color: #fde68a; border-color: rgba(245, 158, 11, 0.35); }
-    .sd-root .badge-set-toy { background: rgba(16, 185, 129, 0.18); color: #6ee7b7; border-color: rgba(16, 185, 129, 0.35); }
+    .sd-root .badge-set-10 { background: rgba(244, 63, 94, 0.18); color: #be123c; border-color: rgba(244, 63, 94, 0.35); }
+    .sd-root .badge-set-5 { background: rgba(24, 24, 27, 0.18); color: #b45309; border-color: rgba(24, 24, 27, 0.35); }
+    .sd-root .badge-set-toy { background: rgba(16, 185, 129, 0.18); color: #047857; border-color: rgba(16, 185, 129, 0.35); }
 
-    .sd-root .badge-freq-fast { background: rgba(16, 185, 129, 0.2); color: #34d399; }
-    .sd-root .badge-freq-monthly { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
-    .sd-root .badge-freq-slow { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
-    .sd-root .badge-freq-single { background: rgba(255, 255, 255, 0.06); color: #9ca3af; }
+    .sd-root .badge-freq-fast { background: rgba(16, 185, 129, 0.2); color: #047857; }
+    .sd-root .badge-freq-monthly { background: rgba(59, 130, 246, 0.2); color: #1d4ed8; }
+    .sd-root .badge-freq-slow { background: rgba(24, 24, 27, 0.2); color: #b45309; }
+    .sd-root .badge-freq-single { background: rgba(24, 24, 27, 0.06); color: #71717a; }
 
     /* Button drilldown */
     .sd-root .btn-drilldown {
-      background: rgba(245, 158, 11, 0.15);
-      border: 1px solid rgba(245, 158, 11, 0.35);
+      background: rgba(24, 24, 27, 0.15);
+      border: 1px solid rgba(24, 24, 27, 0.35);
       color: var(--accent-gold-light);
       padding: 3px 8px;
       border-radius: 6px;
@@ -1474,9 +1469,9 @@
     }
 
     .sd-root .page-btn {
-      background: rgba(255, 255, 255, 0.06);
+      background: rgba(24, 24, 27, 0.06);
       border: 1px solid var(--border-color);
-      color: #fff;
+      color: var(--text-primary);
       padding: 4px 10px;
       border-radius: 6px;
       font-size: 0.78rem;
@@ -1484,15 +1479,15 @@
       transition: all 0.15s ease;
     }
     .sd-root .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-    .sd-root .page-btn:not(:disabled):hover { background: rgba(255, 255, 255, 0.15); }
+    .sd-root .page-btn:not(:disabled):hover { background: rgba(24, 24, 27, 0.15); }
 
     /* Modal */
     .sd-root .modal-overlay {
       display: none;
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.75);
-      backdrop-filter: blur(8px);
+      background: rgba(0, 0, 0, 0.25);
+      
       z-index: 2000;
       align-items: center;
       justify-content: center;
@@ -1520,7 +1515,7 @@
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      background: rgba(15, 23, 42, 0.6);
+      background: #ffffff;
     }
 
     .sd-root .modal-body {
@@ -1529,9 +1524,9 @@
     }
 
     .sd-root .modal-close-btn {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(24, 24, 27, 0.1);
       border: none;
-      color: #fff;
+      color: var(--text-primary);
       width: 32px;
       height: 32px;
       border-radius: 50%;
@@ -1540,7 +1535,7 @@
       align-items: center;
       justify-content: center;
     }
-    .sd-root .modal-close-btn:hover { background: rgba(255, 255, 255, 0.2); }
+    .sd-root .modal-close-btn:hover { background: rgba(24, 24, 27, 0.2); }
 
     /* Insight Highlight Cards */
     .sd-root .highlight-card-grid {
@@ -1551,7 +1546,7 @@
     }
 
     .sd-root .highlight-card {
-      background: rgba(17, 24, 39, 0.6);
+      background: #ffffff;
       border: 1px solid var(--border-color);
       border-radius: var(--radius-md);
       padding: 16px;
@@ -1560,7 +1555,7 @@
     .sd-root .highlight-card-title {
       font-size: 0.88rem;
       font-weight: 700;
-      color: #fff;
+      color: var(--text-primary);
       margin-bottom: 6px;
       display: flex;
       align-items: center;
@@ -1579,14 +1574,15 @@
       padding: 30px 0 10px;
       color: var(--text-muted);
       font-size: 0.8rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      border-top: 1px solid rgba(24, 24, 27, 0.06);
       margin-top: 40px;
     }
   
 /* ==================== BACKOFFICE INTEGRATION ==================== */
+/* The dashboard renders inside AdminShell's padded main, like every other page,
+   so it must not pull itself out of that padding. */
 .sd-root {
-  margin: -1.5rem;
-  min-height: calc(100vh - 57px);
+  min-height: 0;
 }
 .sd-root .container { max-width: 1480px; }
 .sd-root .sd-loading,
@@ -1595,11 +1591,11 @@
   text-align: center;
   color: var(--text-secondary);
 }
-.sd-root .sd-empty h2 { color: #fff; font-size: 1.2rem; font-weight: 800; margin-bottom: 6px; }
+.sd-root .sd-empty h2 { color: var(--text-primary); font-size: 1.2rem; font-weight: 800; margin-bottom: 6px; }
 .sd-root .sd-btn-primary {
   background: linear-gradient(135deg, #f59e0b, #f97316);
   border: none;
-  color: #111827;
+  color: #fafafa;
   padding: 8px 16px;
   border-radius: var(--radius-sm);
   font-size: 0.82rem;
@@ -1609,9 +1605,9 @@
 }
 .sd-root .sd-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 .sd-root .sd-btn-ghost {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  color: #fff;
+  background: rgba(24, 24, 27, 0.08);
+  border: 1px solid rgba(24, 24, 27, 0.16);
+  color: var(--text-primary);
   padding: 7px 14px;
   border-radius: var(--radius-sm);
   font-size: 0.8rem;
@@ -1619,17 +1615,17 @@
   font-family: inherit;
   cursor: pointer;
 }
-.sd-root .sd-btn-ghost:hover { background: rgba(255, 255, 255, 0.16); }
+.sd-root .sd-btn-ghost:hover { background: rgba(24, 24, 27, 0.16); }
 .sd-root .sd-select {
-  background: rgba(17, 24, 39, 0.9);
+  background: #ffffff;
   border: 1px solid var(--border-color);
-  color: #fff;
+  color: var(--text-primary);
   padding: 6px 10px;
   border-radius: var(--radius-sm);
   font-size: 0.8rem;
   font-family: inherit;
 }
-.sd-root .sd-error { color: #fb7185; font-size: 0.82rem; }
+.sd-root .sd-error { color: #be123c; font-size: 0.82rem; }
 .sd-root .sd-fetching { opacity: 0.6; transition: opacity 0.2s ease; }
 .sd-root .modal-content.sd-modal-sm { max-width: 520px; }
 .sd-root .sd-modal-footer {
@@ -1669,8 +1665,8 @@
   align-items: flex-end;
   gap: 6px;
   min-height: 180px;
-  border-left: 1px solid rgba(255, 255, 255, 0.06);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  border-left: 1px solid rgba(24, 24, 27, 0.06);
+  border-bottom: 1px solid rgba(24, 24, 27, 0.12);
   padding: 6px 4px 0;
 }
 .sd-root .sd-chart-col {
@@ -1697,7 +1693,7 @@
   flex-direction: column-reverse;
   border-radius: 6px 6px 2px 2px;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(24, 24, 27, 0.04);
   transition: height 0.3s ease;
 }
 .sd-root .sd-chart-stack > div { width: 100%; }
@@ -1712,13 +1708,13 @@
 .sd-root .sd-barlist { display: flex; flex-direction: column; gap: 12px; }
 .sd-root .sd-barlist-row { display: flex; flex-direction: column; gap: 5px; }
 .sd-root .sd-barlist-head { display: flex; justify-content: space-between; gap: 10px; font-size: 0.8rem; }
-.sd-root .sd-barlist-label { color: #e5e7eb; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sd-root .sd-barlist-label { color: #27272a; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sd-root .sd-barlist-value { color: var(--accent-gold-light); font-weight: 700; white-space: nowrap; }
 .sd-root .sd-barlist-track {
   width: 100%;
   height: 9px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(24, 24, 27, 0.06);
   overflow: hidden;
 }
 .sd-root .sd-barlist-fill { height: 100%; border-radius: 999px; transition: width 0.35s ease; }
@@ -1728,8 +1724,8 @@
   gap: 2px;
   height: 100%;
   min-height: 200px;
-  border-left: 1px solid rgba(255, 255, 255, 0.06);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  border-left: 1px solid rgba(24, 24, 27, 0.06);
+  border-bottom: 1px solid rgba(24, 24, 27, 0.12);
   padding: 6px 4px 0;
 }
 .sd-root .sd-column {
@@ -1751,5 +1747,163 @@
   gap: 10px;
   font-size: 0.8rem;
 }
-.sd-root .sd-metric-bar-label { color: #e5e7eb; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sd-root .sd-metric-bar-value { color: #fff; font-weight: 700; white-space: nowrap; }
+.sd-root .sd-metric-bar-label { color: #27272a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sd-root .sd-metric-bar-value { color: var(--text-primary); font-weight: 700; white-space: nowrap; }
+
+/* ---- Registration split (gender / age share bars) ---- */
+.sd-root .share-list { display: flex; flex-direction: column; gap: 14px; margin-top: 14px; }
+.sd-root .share-row { display: flex; flex-direction: column; gap: 6px; }
+.sd-root .share-row-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.82rem;
+  color: #27272a;
+}
+.sd-root .share-row-value { color: var(--text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sd-root .share-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(24, 24, 27, 0.08);
+  overflow: hidden;
+}
+.sd-root .share-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #b45309, #b45309);
+  transition: width 0.3s ease;
+}
+/* ==================== BACKOFFICE THEME ====================
+ * The dashboard follows the backoffice look (white surfaces, neutral text,
+ * near-black primary). Data colours (Shopee, TikTok, chart series) stay. */
+.sd-root .top-header { background: hsl(var(--background)); }
+.sd-root .header-logo-badge { background: #18181b; box-shadow: none; }
+.sd-root .product-rank { color: var(--text-primary); }
+.sd-root .is-leader .product-rank { color: #fafafa; background: #18181b; }
+
+.sd-root .nav-tab-btn:hover { background: #f4f4f5; color: var(--text-primary); }
+.sd-root .nav-tab-btn.active,
+.sd-root .nav-tab-btn.tab-sales.active,
+.sd-root .nav-tab-btn.tab-cust.active,
+.sd-root .nav-tab-btn.tab-behav.active,
+.sd-root .nav-tab-btn.tab-flavors.active,
+.sd-root .nav-tab-btn.tab-geo.active,
+.sd-root .mode-switch-btn.active,
+.sd-root .preset-chip.active,
+.sd-root .platform-pill.active,
+.sd-root .product-view-btn.active,
+.sd-root .filter-btn.active,
+.sd-root .sd-btn-primary {
+  background: #18181b;
+  border-color: #18181b;
+  color: #fafafa;
+  box-shadow: none;
+}
+.sd-root .platform-pill.tab-shopee.active { background: var(--accent-shopee); border-color: var(--accent-shopee); color: #fff; }
+.sd-root .platform-pill.tab-tiktok.active { background: var(--accent-tiktok); border-color: var(--accent-tiktok); color: #fff; }
+.sd-root .platform-pill.tab-live.active { background: var(--accent-live); border-color: var(--accent-live); color: #fff; }
+
+.sd-root .kpi-card,
+.sd-root .section-card,
+.sd-root .chart-card,
+.sd-root .product-mix-shell,
+.sd-root .spotlight-card,
+.sd-root .weekly-impact-card,
+.sd-root .highlight-card,
+.sd-root .modal-content {
+  background: #ffffff;
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+.sd-root .weekly-focus-banner { background: #fafafa; border-color: hsl(var(--border)); }
+.sd-root .share-bar { background: #f4f4f5; }
+.sd-root .share-bar > span { background: #18181b; }
+.sd-root table th { background: #fafafa; color: var(--text-secondary); }
+.sd-root input,
+.sd-root select { background: #ffffff; border-color: hsl(var(--border)); color: var(--text-primary); }
+.sd-root .sd-members-split {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  margin-top: 24px;
+}
+@media (max-width: 900px) {
+  .sd-root .sd-members-split { grid-template-columns: 1fr; }
+}
+
+/* ==================== MEMBER CHARTS ==================== */
+.sd-root .mc-chart { position: relative; }
+.sd-root .mc-tip {
+  position: absolute;
+  transform: translate(-50%, calc(-100% - 10px));
+  pointer-events: none;
+  background: #ffffff;
+  border: 1px solid hsl(var(--border));
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 6px 10px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+  z-index: 5;
+}
+.sd-root .mc-tip strong { color: var(--text-primary); font-weight: 700; }
+.sd-root .mc-tip span { color: var(--text-secondary); }
+.sd-root .mc-chart [tabindex="0"]:focus-visible { outline: 2px solid #18181b; outline-offset: 2px; }
+
+/* tall segmented bar: parts separated by a 2px surface gap */
+.sd-root .mc-seg { display: flex; gap: 2px; height: 28px; }
+.sd-root .mc-seg-part {
+  border-radius: 4px;
+  min-width: 4px;
+  display: flex;
+  align-items: center;
+  padding-left: 8px;
+  cursor: default;
+}
+.sd-root .mc-seg-label { color: #ffffff; font-size: 0.75rem; font-weight: 700; }
+.sd-root .mc-legend { list-style: none; display: grid; gap: 6px; margin-top: 14px; }
+.sd-root .mc-legend li { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; }
+.sd-root .mc-swatch { width: 10px; height: 10px; border-radius: 2px; flex: none; }
+.sd-root .mc-legend-name { color: var(--text-primary); font-weight: 600; }
+.sd-root .mc-legend-value { margin-left: auto; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+
+/* columns: one baseline, 4px rounded data end, square at the baseline */
+.sd-root .mc-cols {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  border-bottom: 1px solid hsl(var(--border));
+}
+.sd-root .mc-col { flex: 1; display: flex; flex-direction: column; align-items: center; min-width: 0; }
+.sd-root .mc-col-value { font-size: 0.72rem; color: var(--text-secondary); height: 16px; font-variant-numeric: tabular-nums; }
+.sd-root .mc-col-slot { flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center; }
+.sd-root .mc-col-bar { width: 100%; max-width: 24px; border-radius: 4px 4px 0 0; transition: height 0.3s ease; }
+.sd-root .mc-axis { display: flex; gap: 2px; margin-top: 6px; }
+.sd-root .mc-axis-label {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ranked horizontal bars */
+.sd-root .mc-ranked { display: flex; flex-direction: column; gap: 10px; }
+.sd-root .mc-rank-row { display: grid; grid-template-columns: minmax(0, 180px) 1fr auto; align-items: center; gap: 12px; }
+.sd-root .mc-rank-name { font-size: 0.82rem; color: var(--text-primary); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sd-root .mc-rank-track { height: 16px; display: flex; align-items: center; }
+.sd-root .mc-rank-bar { height: 16px; border-radius: 0 4px 4px 0; transition: width 0.3s ease; }
+.sd-root .mc-rank-value { font-size: 0.78rem; color: var(--text-secondary); font-variant-numeric: tabular-nums; white-space: nowrap; }
+@media (max-width: 640px) {
+  .sd-root .mc-rank-row { grid-template-columns: 1fr auto; }
+  .sd-root .mc-rank-name { grid-column: 1 / -1; }
+}
+.sd-root .mc-table-toggle { margin-top: 16px; }
+.sd-root .mc-table-toggle summary { cursor: pointer; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 8px; }

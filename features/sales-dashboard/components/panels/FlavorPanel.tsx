@@ -34,9 +34,8 @@ export function FlavorPanel({ report }: { report: SalesReport }) {
   const topFlavor = report.flavors[0];
 
   return (
-    <section className="tab-panel active">
-      <div className="container">
-        <div className="product-mix-shell" style={{ marginTop: 24 }}>
+    <div className="space-y-6">
+        <div className="product-mix-shell">
           <div className="product-mix-toolbar">
             <div>
               <div className="product-mix-eyebrow">Product mix decision view</div>
@@ -299,7 +298,6 @@ export function FlavorPanel({ report }: { report: SalesReport }) {
             </div>
           </div>
         </details>
-      </div>
-    </section>
+    </div>
   );
 }

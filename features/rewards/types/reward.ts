@@ -1,9 +1,17 @@
+import type { PublicStatus } from "@/lib/publicStatus";
 import type { LineVisibility, RedemptionLineMessages } from "@/features/line-oa/types/lineVisibility";
 
 /** Mirrors backoffice-api dto/reward_dto.go. */
 
 export type RewardStatus = "draft" | "active" | "inactive" | "archived";
 export type RedemptionStatus = "pending" | "approved" | "packing" | "shipped" | "delivered" | "cancelled";
+/** The rewards table only distinguishes public (active) from unpublic. */
+export type RewardPublicStatus = PublicStatus;
+
+/** The table's two states: active is public, every other stored status is not. */
+export function toRewardPublicStatus(status: RewardStatus): RewardPublicStatus {
+  return status === "active" ? "public" : "unpublic";
+}
 
 export interface RewardCategory {
   id: number;
@@ -109,7 +117,7 @@ export interface Redemption {
 export interface RewardFilters {
   search: string;
   categoryId: string;
-  status: "" | RewardStatus;
+  status: "" | RewardPublicStatus;
   lowStock: boolean;
   page: number;
   limit: number;

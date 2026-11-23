@@ -210,6 +210,47 @@ export interface SalesFilters {
   region: string;
 }
 
+/** One slice of the gender split of the members who registered in the range. */
+export interface MemberGender {
+  gender: "male" | "female" | "other" | "unspecified";
+  members: number;
+  sharePercent: number;
+}
+
+/** One age band; the "unknown" band holds members with no birth date. */
+export interface MemberAgeBucket {
+  key: string;
+  label: string;
+  members: number;
+  sharePercent: number;
+}
+
+/** The reward a member redeemed first, counted once per member. */
+export interface MemberFirstReward {
+  rewardId: number;
+  rewardName: string;
+  members: number;
+  sharePercent: number;
+}
+
+/** The SKU a member typed a product code for first, counted once per member. */
+export interface MemberFirstSKU {
+  skuCode: string;
+  skuName: string;
+  members: number;
+  sharePercent: number;
+}
+
+/** One reward members redeemed in the range (cancelled excluded). */
+export interface MemberRewardRedeemed {
+  rewardId: number;
+  rewardName: string;
+  redemptions: number;
+  qty: number;
+  points: number;
+  sharePercent: number;
+}
+
 /** GET /reports/members — CRM members (dashboard part B). */
 export interface MemberReport {
   dateFrom: string;
@@ -224,4 +265,14 @@ export interface MemberReport {
   pointsRefunded: number;
   outstandingPoints: number;
   months: { month: string; newMembers: number; pointsEarned: number; pointsRedeemed: number; pointsExpired: number }[];
+  /** Registration split of the members created inside the range. */
+  genders: MemberGender[];
+  ageBuckets: MemberAgeBucket[];
+  firstSkus: MemberFirstSKU[];
+  firstRewards: MemberFirstReward[];
+  /** Redemptions created in the range, not cancelled. */
+  redemptions: number;
+  /** Distinct members who redeemed in the range. */
+  redemptionMembers: number;
+  rewards: MemberRewardRedeemed[];
 }

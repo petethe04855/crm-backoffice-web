@@ -19,15 +19,16 @@ describe("MemberSearchPanel", () => {
     expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ search: "nop", tierId: "1" }));
   });
 
-  it("blocks a reversed date range", async () => {
+  it("filters by a registration date range picked on the calendar", async () => {
     const onApply = vi.fn();
-    render(<MemberSearchPanel filters={EMPTY_MEMBER_FILTERS} tiers={tiers} onApply={onApply} />);
+    render(<MemberSearchPanel filters={{ ...EMPTY_MEMBER_FILTERS, registeredFrom: "2026-11-01" }} tiers={tiers} onApply={onApply} />);
 
-    await userEvent.type(screen.getByLabelText("สมัครตั้งแต่"), "2026-11-15");
-    await userEvent.type(screen.getByLabelText("ถึง"), "2026-11-01");
+    await userEvent.click(screen.getByLabelText("วันที่สมัคร"));
+    await userEvent.click(screen.getAllByRole("button", { name: "15 พฤศจิกายน 2569" })[0]);
+    expect(screen.getByLabelText("วันที่สมัคร")).toHaveTextContent("01/11/2569 – 15/11/2569");
 
-    expect(screen.getByRole("alert")).toHaveTextContent("วันที่เริ่มต้องไม่เกินวันที่สิ้นสุด");
-    expect(screen.getByRole("button", { name: "ค้นหา" })).toBeDisabled();
+    await userEvent.click(screen.getByRole("button", { name: "ค้นหา" }));
+    expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ registeredFrom: "2026-11-01", registeredTo: "2026-11-15" }));
   });
 
   it("counts active filters", () => {

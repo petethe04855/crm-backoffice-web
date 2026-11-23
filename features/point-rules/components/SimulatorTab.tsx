@@ -9,6 +9,7 @@ import { useTiers } from "@/features/membership/hooks/useMembers";
 import { useSimulatePoints } from "../hooks/usePointRules";
 import { wholeNumberError } from "../schemas/pointRuleForms";
 import { EARN_RULE_TYPE_LABEL } from "../types/pointRules";
+import { ThaiDateInput } from "@/components/form/ThaiDateInput";
 
 /** Asks the backend what a member would earn. Nothing is computed here. */
 export function SimulatorTab() {
@@ -61,7 +62,7 @@ export function SimulatorTab() {
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="sim-at">วันเวลา (เว้นว่าง = ตอนนี้)</Label>
-          <Input id="sim-at" type="datetime-local" value={at} onChange={(e) => setAt(e.target.value)} />
+          <ThaiDateInput id="sim-at" kind="datetime" value={at} onChange={setAt} />
         </div>
         <div className="sm:col-span-4">
           <Button type="submit" disabled={simulate.isPending}>

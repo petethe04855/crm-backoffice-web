@@ -26,6 +26,7 @@ import {
   type RewardFormValues,
 } from "../schemas/rewardForm";
 import { REWARD_STATUS_LABEL, STATUS_VARIANT, type ERPSKU, type Reward, type RewardStatus } from "../types/reward";
+import { ThaiDateRangeInput } from "@/components/form/ThaiDateRangeInput";
 
 function Field({ id, label, error, hint, children }: { id: string; label: string; error?: string; hint?: string; children: ReactNode }) {
   return (
@@ -294,14 +295,22 @@ export function RewardForm({ reward, canManage }: { reward?: Reward; canManage: 
                 </Select>
               </Field>
             </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field id="rw-from" label="เปิดแลกตั้งแต่ (เว้นว่าง = ทันที)">
-                <Input id="rw-from" type="datetime-local" value={values.availableFrom} onChange={(e) => set("availableFrom", e.target.value)} />
-              </Field>
-              <Field id="rw-to" label="ถึง (เว้นว่าง = ไม่มีกำหนด)" error={errors.availableTo}>
-                <Input id="rw-to" type="datetime-local" value={values.availableTo} onChange={(e) => set("availableTo", e.target.value)} />
-              </Field>
-            </div>
+            <Field id="rw-range" label="ช่วงเปิดแลก (เว้นว่าง = เปิดทันที / ไม่มีกำหนดปิด)" error={errors.availableTo}>
+              <ThaiDateRangeInput
+                id="rw-range"
+                withTime
+                optional
+                emptyStartLabel="ทันที"
+                emptyEndLabel="ไม่มีกำหนด"
+                startTimeLabel="เปิดเวลา"
+                endTimeLabel="ปิดเวลา"
+                value={{ start: values.availableFrom, end: values.availableTo }}
+                onChange={(r) => {
+                  set("availableFrom", r.start);
+                  set("availableTo", r.end);
+                }}
+              />
+            </Field>
           </Section>
         </fieldset>
 

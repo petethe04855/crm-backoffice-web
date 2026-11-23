@@ -13,9 +13,8 @@ export function BehaviorPanel({ report }: { report: SalesReport }) {
   }));
 
   return (
-    <section className="tab-panel active">
-      <div className="container">
-        <div className="kpi-grid" style={{ marginTop: 24 }}>
+    <div className="space-y-6">
+        <div className="kpi-grid">
           <div className="kpi-card">
             <div className="kpi-header">
               <span className="kpi-title">ลูกค้าซื้อซ้ำ</span>
@@ -153,7 +152,6 @@ export function BehaviorPanel({ report }: { report: SalesReport }) {
             />
           </div>
         </div>
-      </div>
-    </section>
+    </div>
   );
 }

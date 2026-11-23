@@ -7,26 +7,25 @@ import { DataTable, type Column } from "@/components/common/DataTable";
 import { SearchPanel } from "@/components/common/SearchPanel";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { TwoColumnLayout } from "@/components/layout/TwoColumnLayout";
-import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { PERMISSIONS } from "@/features/auth/types/auth";
 import { hasPermission, useAuthStore } from "@/stores/authStore";
-import { useCouponList, useCouponTransition, useDeleteCoupon } from "../hooks/useCoupons";
+import { useCouponList, useDeleteCoupon } from "../hooks/useCoupons";
 import { RowActions } from "@/components/common/RowActions";
-import { showDisabledReason } from "@/features/line-oa/types/lineVisibility";
 import { describeBenefit, describeExpiry, describeQuota } from "../lib/benefit";
 import {
   CHANNEL_LABEL,
-  COUPON_STATUS_LABEL,
   EMPTY_COUPON_FILTERS,
-  STATUS_VARIANT,
   type Coupon,
   type CouponFilters,
 } from "../types/coupon";
+import { PUBLIC_STATUS_LABEL } from "@/lib/publicStatus";
+import { CouponPublicSwitch } from "./CouponPublicSwitch";
 import { LineVisibilityBadge } from "@/features/line-oa/components/LineVisibilityBadge";
+import { ThaiDateInput } from "@/components/form/ThaiDateInput";
 
 type Draft = Pick<CouponFilters, "search" | "month" | "status" | "channel">;
 
@@ -57,13 +56,13 @@ function CouponSearchPanel({ filters, onApply }: { filters: CouponFilters; onApp
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="c-month">เปิดให้แลกในเดือน</Label>
-          <Input id="c-month" type="month" value={draft.month} onChange={(e) => set("month", e.target.value)} />
+          <ThaiDateInput id="c-month" kind="month" value={draft.month} onChange={(v) => set("month", v)} />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="c-status">สถานะ</Label>
           <Select id="c-status" value={draft.status} onChange={(e) => set("status", e.target.value as Draft["status"])}>
             <option value="">ทั้งหมด</option>
-            {Object.entries(COUPON_STATUS_LABEL).map(([v, l]) => (
+            {Object.entries(PUBLIC_STATUS_LABEL).map(([v, l]) => (
               <option key={v} value={v}>
                 {l}
               </option>
@@ -89,7 +88,8 @@ function CouponSearchPanel({ filters, onApply }: { filters: CouponFilters; onApp
   );
 }
 
-const columns: Column<Coupon>[] = [
+function makeColumns(canManage: boolean): Column<Coupon>[] {
+  return [
   {
     key: "name",
     label: "ชื่อ",
@@ -108,25 +108,19 @@ const columns: Column<Coupon>[] = [
   {
     key: "status",
     label: "สถานะ",
-    render: (c) => <Badge variant={STATUS_VARIANT[c.status]}>{COUPON_STATUS_LABEL[c.status]}</Badge>,
+    render: (c) => <CouponPublicSwitch coupon={c} canManage={canManage} />,
   },
   { key: "lineVisibility", label: "LINE OA", render: (c) => <LineVisibilityBadge value={c.lineVisibility} /> },
-];
+  ];
+}
 
-/** แสดงใน LINE OA (activate) / แก้ไข / ลบ (nobody claimed it yet). */
+/** edit / delete (nobody claimed it yet). The public switch lives in the status column. */
 function CouponRowActions({ c, canManage }: { c: Coupon; canManage: boolean }) {
-  const transition = useCouponTransition();
   const remove = useDeleteCoupon();
   if (!canManage) return <RowActions editHref={`/coupons/${c.id}`} confirmDelete="" />;
-  const activatable = c.status === "draft" || c.status === "paused";
   return (
     <RowActions
       editHref={`/coupons/${c.id}`}
-      show={{
-        label: "แสดงใน LINE OA",
-        run: () => transition.mutateAsync({ id: c.id, action: "activate" }),
-        disabledReason: activatable ? undefined : showDisabledReason(c.lineVisibility) ?? "เปิดให้แลกอยู่แล้ว",
-      }}
       remove={{
         label: "ลบ",
         run: () => remove.mutateAsync(c.id),
@@ -172,7 +166,7 @@ export function CouponListView() {
         content={
           <DataTable
             rows={list.data?.data ?? []}
-            columns={columns}
+            columns={makeColumns(canManage)}
             meta={list.data?.meta ?? { page: filters.page, limit: filters.limit, total: 0 }}
             isLoading={list.isLoading}
             isError={list.isError}

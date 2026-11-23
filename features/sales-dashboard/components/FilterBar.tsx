@@ -1,9 +1,31 @@
 "use client";
 
-import { CHANNEL_OPTIONS, PRESETS, REGION_OPTIONS, matchPreset, isRangeValid, type DateRange, type PresetKey, formatBaht, daysInclusive } from "../lib/dashboard";
+import { SearchPanel } from "@/components/common/SearchPanel";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+import { formatThaiDate } from "@/lib/thaiDate";
+import {
+  CHANNEL_OPTIONS,
+  PRESETS,
+  REGION_OPTIONS,
+  matchPreset,
+  isRangeValid,
+  type DateRange,
+  type PresetKey,
+  formatBaht,
+  daysInclusive,
+} from "../lib/dashboard";
 import type { SalesFilters, SalesSummary } from "../types/salesDashboard";
+import { ThaiDateRangeInput } from "@/components/form/ThaiDateRangeInput";
 
-/** Command bar: presets, a custom range, channel pills and the region select. */
+/**
+ * Filter panel of the dashboard, built on the shared SearchPanel so it reads
+ * like the sidebar of every other backoffice screen: date range first, then the
+ * quick presets, then channel and region. Channel pills and the region select
+ * are optional so the members tab can render a date-only panel.
+ */
 export function FilterBar({
   filters,
   draft,
@@ -23,80 +45,80 @@ export function FilterBar({
   onDraftChange: (range: DateRange) => void;
   onApply: () => void;
   onPreset: (key: PresetKey) => void;
-  onChannel: (value: string) => void;
-  onRegion: (value: string) => void;
+  /** Omit to hide the channel pills (date-only bar). */
+  onChannel?: (value: string) => void;
+  /** Omit to hide the region select (date-only bar). */
+  onRegion?: (value: string) => void;
   onReset: () => void;
 }) {
   const activePreset = matchPreset({ from: filters.dateFrom, to: filters.dateTo });
   const valid = isRangeValid(draft.from, draft.to);
   const days = daysInclusive(filters.dateFrom, filters.dateTo);
+  const activeCount = [filters.dateFrom, filters.dateTo, filters.channel, filters.region].filter(
+    Boolean,
+  ).length;
 
   return (
-    <div className="filter-sticky-bar">
-      <div className="container">
-        <div className="filter-bar-inner">
-          <div className="filter-left-controls">
-            <div className="date-custom-controls">
-              <span className="date-input-chip">
-                <label htmlFor="sd-from">ตั้งแต่</label>
-                <input
-                  id="sd-from"
-                  type="date"
-                  value={draft.from}
-                  max={draft.to || undefined}
-                  onChange={(e) => onDraftChange({ ...draft, from: e.target.value })}
-                />
-              </span>
-              <span className="date-separator">→</span>
-              <span className="date-input-chip">
-                <label htmlFor="sd-to">ถึง</label>
-                <input
-                  id="sd-to"
-                  type="date"
-                  value={draft.to}
-                  min={draft.from || undefined}
-                  onChange={(e) => onDraftChange({ ...draft, to: e.target.value })}
-                />
-              </span>
-              <button type="button" className="sd-btn-primary" onClick={onApply} disabled={!valid || fetching}>
-                ใช้ช่วงนี้
-              </button>
-              {!valid && <span className="sd-error">ช่วงวันที่ต้องเรียงถูกและไม่เกิน 366 วัน</span>}
-            </div>
+    <SearchPanel onReset={onReset} activeFilterCount={activeCount}>
+      <div className="space-y-4">
+        <div className="space-y-1.5">
+          <Label htmlFor="sd-range">ช่วงวันที่</Label>
+          <ThaiDateRangeInput
+            id="sd-range"
+            value={{ start: draft.from, end: draft.to }}
+            onChange={(r) => onDraftChange({ from: r.start, to: r.end })}
+          />
+        </div>
 
-            <div className="quick-preset-chips">
-              {PRESETS.map((preset) => (
+        <div className="space-y-1.5">
+          <Label>ช่วงด่วน</Label>
+          <div className="flex flex-wrap gap-1.5">
+            {PRESETS.map((preset) => (
+              <button
+                type="button"
+                key={preset.key}
+                onClick={() => onPreset(preset.key)}
+                className={cn(
+                  "rounded-md border px-2.5 py-1 text-xs transition-colors",
+                  activePreset === preset.key
+                    ? "border-neutral-900 bg-neutral-900 font-medium text-white"
+                    : "border-neutral-200 text-neutral-600 hover:bg-neutral-100",
+                )}
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {onChannel && (
+          <div className="space-y-1.5">
+            <Label>ช่องทาง</Label>
+            <div className="flex flex-wrap gap-1.5">
+              {CHANNEL_OPTIONS.map((option) => (
                 <button
                   type="button"
-                  key={preset.key}
-                  className={`preset-chip${activePreset === preset.key ? " active" : ""}`}
-                  onClick={() => onPreset(preset.key)}
+                  key={option.value}
+                  onClick={() => onChannel(option.value)}
+                  className={cn(
+                    "rounded-md border px-2.5 py-1 text-xs transition-colors",
+                    filters.channel === option.value
+                      ? "border-neutral-900 bg-neutral-900 font-medium text-white"
+                      : "border-neutral-200 text-neutral-600 hover:bg-neutral-100",
+                  )}
                 >
-                  {preset.label}
+                  <span aria-hidden>{option.icon}</span> {option.label}
                 </button>
               ))}
             </div>
+          </div>
+        )}
 
-            <div className="platform-segment">
-              {CHANNEL_OPTIONS.map((option) => {
-                const tabClass =
-                  option.value === "shopee" ? " tab-shopee" : option.value === "tiktok" ? " tab-tiktok" : "";
-                return (
-                  <button
-                    type="button"
-                    key={option.value}
-                    className={`platform-pill${tabClass}${filters.channel === option.value ? " active" : ""}`}
-                    onClick={() => onChannel(option.value)}
-                  >
-                    <span aria-hidden>{option.icon}</span> {option.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            <select
-              className="sd-select"
-              aria-label="ภูมิภาค"
+        {onRegion && (
+          <div className="space-y-1.5">
+            <Label htmlFor="sd-region">ภูมิภาค</Label>
+            <Select
+              id="sd-region"
               value={filters.region}
               onChange={(e) => onRegion(e.target.value)}
             >
@@ -106,26 +128,32 @@ export function FilterBar({
                   {region}
                 </option>
               ))}
-            </select>
-
-            <button type="button" className="btn-reset-filter" onClick={onReset} title="ล้างตัวกรอง">
-              ↺ ล้างตัวกรอง
-            </button>
+            </Select>
           </div>
+        )}
 
-          <div className="filter-live-stat">
-            <span>
-              {days} วัน · {filters.dateFrom} → {filters.dateTo}
-            </span>
-            {summary && (
-              <span>
-                ยอดรวม <span className="stat-highlight">{formatBaht(summary.sales)}</span>
-              </span>
-            )}
-            {fetching && <span className="sd-note">กำลังอัปเดต…</span>}
-          </div>
+        <Button type="button" className="w-full" onClick={onApply} disabled={!valid || fetching}>
+          ใช้ช่วงนี้
+        </Button>
+        {!valid && (
+          <p role="alert" className="text-xs text-red-600">
+            ช่วงวันที่ต้องเรียงถูกและไม่เกิน 366 วัน
+          </p>
+        )}
+
+        <div className="space-y-1 border-t border-neutral-100 pt-3 text-xs text-neutral-500">
+          <p>
+            {days} วัน · {formatThaiDate(filters.dateFrom)} → {formatThaiDate(filters.dateTo)}
+          </p>
+          {summary && (
+            <p>
+              ยอดรวม{" "}
+              <span className="font-medium text-neutral-900">{formatBaht(summary.sales)}</span>
+            </p>
+          )}
+          {fetching && <p>กำลังอัปเดต…</p>}
         </div>
       </div>
-    </div>
+    </SearchPanel>
   );
 }

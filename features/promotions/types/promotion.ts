@@ -1,4 +1,5 @@
 import type { LineVisibility } from "@/features/line-oa/types/lineVisibility";
+import type { PublicStatus } from "@/lib/publicStatus";
 
 /** Where a promotion appears in the LINE app (mirrors crm-core/domain/promotion). */
 export type PromotionPlacement = "home_banner" | "promotion_list" | "popup";
@@ -6,6 +7,8 @@ export type PromotionPlacement = "home_banner" | "promotion_list" | "popup";
 /** Draft / published / archived is what staff set; displayStatus is computed. */
 export type PromotionStatus = "draft" | "published" | "archived";
 export type PromotionDisplayStatus = "draft" | "scheduled" | "live" | "expired" | "archived";
+/** The promotions table only distinguishes public (published) from unpublic. */
+export type PromotionPublicStatus = PublicStatus;
 
 export type PromotionCTAType = "none" | "url" | "reward" | "coupon";
 
@@ -62,7 +65,7 @@ export interface PromotionInput {
 export interface PromotionFilters {
   search: string;
   month: string;
-  status: "" | PromotionStatus;
+  status: "" | PromotionPublicStatus;
   placement: "" | PromotionPlacement;
   page: number;
   limit: number;
@@ -99,6 +102,11 @@ export const PROMOTION_STATUS_LABEL: Record<PromotionStatus, string> = {
   published: "เผยแพร่แล้ว",
   archived: "เก็บถาวร",
 };
+
+/** The table's two states: published is public, every other stored status is not. */
+export function toPublicStatus(status: PromotionStatus): PromotionPublicStatus {
+  return status === "published" ? "public" : "unpublic";
+}
 
 /** What staff see in the status column (plan §3.2). */
 export const DISPLAY_STATUS_LABEL: Record<PromotionDisplayStatus, string> = {

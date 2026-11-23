@@ -25,9 +25,8 @@ export function GeographyPanel({ report }: { report: SalesReport }) {
   const rows = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
   return (
-    <section className="tab-panel active">
-      <div className="container">
-        <div className="section-card" style={{ marginTop: 24 }}>
+    <div className="space-y-6">
+        <div className="section-card">
           <div className="section-title-wrap">
             <h3 className="chart-title">ภาพรวมตามภูมิภาค</h3>
             <p>ยอดขายและสัดส่วนของแต่ละภูมิภาค (จังหวัด normalize ตามข้อมูล ERP)</p>
@@ -119,7 +118,6 @@ export function GeographyPanel({ report }: { report: SalesReport }) {
             </div>
           </div>
         </div>
-      </div>
-    </section>
+    </div>
   );
 }

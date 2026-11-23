@@ -1,3 +1,4 @@
+import type { PublicStatus } from "@/lib/publicStatus";
 import type { LineVisibility } from "@/features/line-oa/types/lineVisibility";
 
 /** Mirrors backoffice-api dto/coupon_dto.go. */
@@ -8,6 +9,13 @@ export type CouponChannel = "store" | "line" | "shopee" | "tiktok";
 export type CodeType = "unique" | "shared";
 export type CouponStatus = "draft" | "active" | "paused" | "ended";
 export type HolderStatus = "available" | "used" | "expired" | "cancelled";
+/** The coupons table only distinguishes public (active) from unpublic. */
+export type CouponPublicStatus = PublicStatus;
+
+/** The table's two states: active is public, every other stored status is not. */
+export function toCouponPublicStatus(status: CouponStatus): CouponPublicStatus {
+  return status === "active" ? "public" : "unpublic";
+}
 
 export interface Coupon {
   id: number;
@@ -113,7 +121,7 @@ export interface CodeView {
 export interface CouponFilters {
   search: string;
   month: string;
-  status: "" | CouponStatus;
+  status: "" | CouponPublicStatus;
   channel: "" | CouponChannel;
   page: number;
   limit: number;

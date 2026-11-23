@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { ThaiDateInput } from "@/components/form/ThaiDateInput";
+import { PUBLIC_STATUS_LABEL } from "@/lib/publicStatus";
 import { SearchPanel } from "@/components/common/SearchPanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +12,6 @@ import {
   EMPTY_PROMOTION_FILTERS,
   PLACEMENTS,
   PLACEMENT_LABEL,
-  PROMOTION_STATUS_LABEL,
   type PromotionFilters,
 } from "../types/promotion";
 
@@ -60,11 +61,11 @@ export function PromotionSearchPanel({
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="p-month">เดือนที่แสดงผล</Label>
-          <Input
+          <ThaiDateInput
             id="p-month"
-            type="month"
+            kind="month"
             value={draft.month}
-            onChange={(e) => set("month", e.target.value)}
+            onChange={(v) => set("month", v)}
           />
           <p className="text-xs text-muted-foreground">แสดงโปรที่ช่วงวันคาบเกี่ยวเดือนนี้</p>
         </div>
@@ -76,7 +77,7 @@ export function PromotionSearchPanel({
             onChange={(e) => set("status", e.target.value as Draft["status"])}
           >
             <option value="">ทุกสถานะ</option>
-            {Object.entries(PROMOTION_STATUS_LABEL).map(([value, label]) => (
+            {Object.entries(PUBLIC_STATUS_LABEL).map(([value, label]) => (
               <option key={value} value={value}>
                 {label}
               </option>

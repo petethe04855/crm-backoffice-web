@@ -25,6 +25,7 @@ export function formatThaiDateTime(
   const includeTime = options?.includeTime ?? true;
 
   return new Intl.DateTimeFormat("th-TH", {
+    timeZone: "Asia/Bangkok",
     year: "numeric",
     month: "short",
     day: "numeric",

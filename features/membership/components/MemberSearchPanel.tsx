@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { EMPTY_MEMBER_FILTERS, MEMBER_STATUS_LABEL, type MemberFilters, type Tier } from "../types/member";
+import { ThaiDateRangeInput } from "@/components/form/ThaiDateRangeInput";
 
 type Draft = Pick<
   MemberFilters,
@@ -115,15 +116,19 @@ export function MemberSearchPanel({
             ))}
           </Select>
         </div>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="m-from">สมัครตั้งแต่</Label>
-            <Input id="m-from" type="date" value={draft.registeredFrom} onChange={(e) => set("registeredFrom", e.target.value)} />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="m-to">ถึง</Label>
-            <Input id="m-to" type="date" value={draft.registeredTo} onChange={(e) => set("registeredTo", e.target.value)} />
-          </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="m-registered">วันที่สมัคร</Label>
+          <ThaiDateRangeInput
+            id="m-registered"
+            optional
+            emptyStartLabel="ทั้งหมด"
+            emptyEndLabel="ปัจจุบัน"
+            value={{ start: draft.registeredFrom, end: draft.registeredTo }}
+            onChange={(r) => {
+              set("registeredFrom", r.start);
+              set("registeredTo", r.end);
+            }}
+          />
         </div>
         {dateError && (
           <p role="alert" className="text-xs text-red-600">

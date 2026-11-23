@@ -1,4 +1,5 @@
 import type { SalesFilters } from "../types/salesDashboard";
+import { formatThaiDateRange, formatThaiDateText, formatThaiMonthText } from "@/lib/thaiDate";
 
 /**
  * Platform pills of the filter bar; "all" means no channel filter.
@@ -129,9 +130,7 @@ export function formatCompactBaht(value: number): string {
 }
 
 export function formatRange(from: string, to: string): string {
-  if (!from || !to) return "-";
-  if (from === to) return from;
-  return `${from} – ${to}`;
+  return formatThaiDateRange(from, to);
 }
 
 /** Tailwind-free trend class used by the CSS (.product-change up/down). */
@@ -150,9 +149,6 @@ export function changeLabel(value: number | null): string {
 /** Week label "2026-W46" -> "W46"; month "2026-11" -> "พ.ย. 26". */
 export function shortPeriod(period: string): string {
   if (period.includes("-W")) return period.split("-W")[1] ? `W${period.split("-W")[1]}` : period;
-  const [year, month] = period.split("-");
-  const monthName = new Intl.DateTimeFormat("th-TH", { month: "short" }).format(
-    new Date(Date.UTC(Number(year), Number(month) - 1, 1)),
-  );
-  return `${monthName} ${String(Number(year) % 100).padStart(2, "0")}`;
+  if (/^\d{4}-\d{2}$/.test(period)) return formatThaiMonthText(period, true);
+  return formatThaiDateText(period);
 }

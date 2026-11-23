@@ -1,7 +1,7 @@
 "use client";
 
 import { useId } from "react";
-import { Input } from "@/components/ui/input";
+import { ThaiDateRangeInput } from "./ThaiDateRangeInput";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
@@ -54,47 +54,26 @@ export function DateRangeField({
   withTime = false,
   disabled = false,
   error,
-  required = false,
   className,
 }: DateRangeFieldProps) {
   const id = useId();
   const message = error ?? validateDateRange(value.start, value.end);
-  const type = withTime ? "datetime-local" : "date";
   const invalid = message !== null && message !== undefined;
 
   return (
     <div className={cn("space-y-2", className)}>
       {label && <Label htmlFor={`${id}-start`}>{label}</Label>}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div className="space-y-1">
-          <Label htmlFor={`${id}-start`} className="text-xs text-muted-foreground">
-            {startLabel}
-          </Label>
-          <Input
-            id={`${id}-start`}
-            type={type}
-            value={value.start}
-            required={required}
-            disabled={disabled}
-            aria-invalid={invalid || undefined}
-            onChange={(e) => onChange({ ...value, start: e.target.value })}
-          />
-        </div>
-        <div className="space-y-1">
-          <Label htmlFor={`${id}-end`} className="text-xs text-muted-foreground">
-            {endLabel}
-          </Label>
-          <Input
-            id={`${id}-end`}
-            type={type}
-            value={value.end}
-            required={required}
-            disabled={disabled}
-            aria-invalid={invalid || undefined}
-            onChange={(e) => onChange({ ...value, end: e.target.value })}
-          />
-        </div>
-      </div>
+      <ThaiDateRangeInput
+        id={`${id}-start`}
+        withTime={withTime}
+        value={value}
+        disabled={disabled}
+        aria-label={label ? undefined : `${startLabel} – ${endLabel}`}
+        aria-invalid={invalid || undefined}
+        startTimeLabel={`เวลา${startLabel.replace(/^วัน/, "")}`}
+        endTimeLabel={`เวลา${endLabel.replace(/^วัน/, "")}`}
+        onChange={onChange}
+      />
       {invalid && (
         <p role="alert" className="text-xs text-destructive">
           {message}

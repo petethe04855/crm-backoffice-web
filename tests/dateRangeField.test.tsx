@@ -43,39 +43,29 @@ describe("validateDateRange", () => {
 });
 
 describe("DateRangeField", () => {
-  it("sets date inputs and reports an inverted range, then clears it", () => {
+  it("picks a range on the calendar", () => {
     const onChange = vi.fn();
-    render(<Harness onChange={onChange} />);
+    render(<Harness onChange={onChange} initial={{ start: "2026-11-01", end: "2026-11-30" }} />);
 
-    const start = screen.getByLabelText("วันเริ่มต้น");
-    const end = screen.getByLabelText("วันสิ้นสุด");
-    expect(start).toHaveAttribute("type", "date");
-    expect(end).toHaveAttribute("type", "date");
+    const field = screen.getByRole("button", { name: /วันเริ่มต้น – วันสิ้นสุด/ });
+    expect(field).toHaveTextContent("01/11/2569 – 30/11/2569");
 
-    fireEvent.change(start, { target: { value: "2026-11-20" } });
-    fireEvent.change(end, { target: { value: "2026-11-19" } });
-
-    expect(screen.getByRole("alert")).toHaveTextContent("วันเริ่มต้นต้องไม่เกินวันสิ้นสุด");
-    expect(start).toHaveAttribute("aria-invalid", "true");
-    expect(onChange).toHaveBeenLastCalledWith({ start: "2026-11-20", end: "2026-11-19" });
-
-    fireEvent.change(end, { target: { value: "2026-11-21" } });
-    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
-    expect(start).not.toHaveAttribute("aria-invalid");
+    fireEvent.click(field);
+    fireEvent.click(screen.getAllByRole("button", { name: "10 พฤศจิกายน 2569" })[0]);
+    expect(onChange).toHaveBeenLastCalledWith({ start: "2026-11-10", end: "" });
+    fireEvent.click(screen.getAllByRole("button", { name: "20 พฤศจิกายน 2569" })[0]);
+    expect(onChange).toHaveBeenLastCalledWith({ start: "2026-11-10", end: "2026-11-20" });
+    expect(field).toHaveTextContent("10/11/2569 – 20/11/2569");
   });
 
-  it("uses datetime-local inputs and compares times on the same day", () => {
-    render(<Harness withTime />);
+  it("with time: reports an end time before the start time on the same day", () => {
+    render(<Harness withTime initial={{ start: "2026-11-18T10:00", end: "2026-11-18T09:00" }} />);
+    expect(screen.getByRole("alert")).toHaveTextContent("วันเริ่มต้นต้องไม่เกินวันสิ้นสุด");
 
-    const start = screen.getByLabelText("วันเริ่มต้น");
-    const end = screen.getByLabelText("วันสิ้นสุด");
-    expect(start).toHaveAttribute("type", "datetime-local");
-
-    fireEvent.change(start, { target: { value: "2026-11-18T10:00" } });
-    fireEvent.change(end, { target: { value: "2026-11-18T09:00" } });
-    expect(screen.getByRole("alert")).toBeInTheDocument();
-
-    fireEvent.change(end, { target: { value: "2026-11-18T10:00" } });
+    fireEvent.click(screen.getByRole("button", { name: /วันเริ่มต้น – วันสิ้นสุด/ }));
+    const endHour = screen.getByLabelText("เวลาสิ้นสุด ชั่วโมง") as HTMLSelectElement;
+    expect(endHour.options).toHaveLength(24); // 00–23
+    fireEvent.change(endHour, { target: { value: "11" } });
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 

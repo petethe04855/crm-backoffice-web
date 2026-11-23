@@ -8,7 +8,6 @@ import { ErrorState } from "@/components/common/ErrorState";
 import { Loading } from "@/components/common/Loading";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { usePromotionList } from "../hooks/usePromotions";
 import { daysInMonth, layoutMonth, monthKey, monthLabel, parseMonth, shiftMonth } from "../lib/calendar";
@@ -18,6 +17,7 @@ import {
   type PromotionDisplayStatus,
 } from "../types/promotion";
 import { PromotionStatusBadge } from "./PromotionStatusBadge";
+import { ThaiDateInput } from "@/components/form/ThaiDateInput";
 
 /** Bar colours by computed status, so overlaps are readable at a glance. */
 const BAR_CLASS: Record<PromotionDisplayStatus, string> = {
@@ -79,13 +79,13 @@ export function PromotionCalendar() {
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
-          <Input
-            type="month"
+          <ThaiDateInput
+            kind="month"
             aria-label="เลือกเดือน"
             className="w-44"
             value={month}
-            onChange={(e) => {
-              if (e.target.value) setMonth(e.target.value);
+            onChange={(v) => {
+              if (v) setMonth(v);
             }}
           />
           <span className="text-sm font-semibold">{monthLabel(month)}</span>

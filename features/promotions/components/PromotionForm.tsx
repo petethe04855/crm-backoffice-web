@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Archive, Copy, Loader2, Save, Send, Trash2 } from "lucide-react";
+import { Copy, EyeOff, Loader2, Save, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { DateRangeField } from "@/components/form/DateRangeField";
 import { ImageUpload } from "@/components/form/ImageUpload";
@@ -30,11 +30,11 @@ import {
   type Promotion,
 } from "../types/promotion";
 import {
-  useArchivePromotion,
   useCreatePromotion,
   useDuplicatePromotion,
   useDeletePromotion,
   usePublishPromotion,
+  useUnpublishPromotion,
   useUpdatePromotion,
 } from "../hooks/usePromotions";
 import { PromotionCardPreview } from "./PromotionCardPreview";
@@ -71,7 +71,7 @@ export function PromotionForm({
   const create = useCreatePromotion();
   const update = useUpdatePromotion();
   const publish = usePublishPromotion();
-  const archive = useArchivePromotion();
+  const unpublish = useUnpublishPromotion();
   const duplicate = useDuplicatePromotion();
   const remove = useDeletePromotion();
 
@@ -82,7 +82,10 @@ export function PromotionForm({
   const [serverError, setServerError] = useState<string | null>(null);
   const [warnings, setWarnings] = useState<string[]>(promotion?.warnings ?? []);
 
-  const set = <K extends keyof PromotionFormValues>(key: K, value: PromotionFormValues[K]) => {
+  const set = <K extends keyof PromotionFormValues>(
+    key: K,
+    value: PromotionFormValues[K],
+  ) => {
     setValues((v) => ({ ...v, [key]: value }));
     setErrors((e) => {
       if (!(key in e)) return e;
@@ -98,14 +101,18 @@ export function PromotionForm({
     create.isPending ||
     update.isPending ||
     publish.isPending ||
-    archive.isPending ||
+    unpublish.isPending ||
     duplicate.isPending ||
     remove.isPending;
 
   const canDelete = promotion?.status === "draft";
-  const canArchive = promotion?.status === "published";
+  const canUnpublish = promotion?.status === "published";
 
-  /** Validates and writes; returns the saved row or null. */
+  /**
+   * Validates and writes. Saving always makes the promotion public (the LINE
+   * app shows it immediately); when the API refuses to publish, the row stays
+   * unpublic and the reason is shown.
+   */
   async function persist(navigateOnCreate: boolean): Promise<Promotion | null> {
     const parsed = promotionFormSchema.safeParse(values);
     if (!parsed.success) {
@@ -115,45 +122,52 @@ export function PromotionForm({
     setErrors({});
     setServerError(null);
     const input = toPromotionInput(values);
+    let saved: Promotion;
     try {
-      const saved = promotion
+      saved = promotion
         ? await update.mutateAsync({ id: promotion.id, input })
         : await create.mutateAsync(input);
-      setWarnings(saved.warnings);
-      if (!promotion && navigateOnCreate) {
-        router.replace(`/promotions/${saved.id}`);
-      }
-      return saved;
     } catch (err) {
       setServerError(errorMessage(err));
       return null;
     }
+
+    if (saved.status !== "published" && saved.status !== "archived") {
+      try {
+        saved = await publish.mutateAsync(saved.id);
+      } catch (err) {
+        setWarnings(saved.warnings);
+        setServerError(
+          `บันทึกแล้ว แต่ยังแสดงใน LINE OA ไม่ได้: ${errorMessage(err)}`,
+        );
+        if (!promotion && navigateOnCreate) {
+          router.replace(`/promotions/${saved.id}`);
+        }
+        return saved;
+      }
+    }
+
+    setWarnings(saved.warnings);
+    if (!promotion && navigateOnCreate) {
+      router.replace(`/promotions/${saved.id}`);
+    }
+    return saved;
   }
 
   async function handleSave() {
     await persist(true);
   }
 
-  async function handlePublish() {
-    const saved = await persist(false);
-    if (!saved) return;
-    const prefix = saved.warnings.length > 0 ? `${saved.warnings.join("\n")}\n\n` : "";
-    if (!window.confirm(`${prefix}เผยแพร่ "${saved.title}" ใช่หรือไม่?`)) return;
-    try {
-      const published = await publish.mutateAsync(saved.id);
-      setWarnings(published.warnings);
-      setServerError(null);
-      if (!promotion) router.replace(`/promotions/${published.id}`);
-    } catch (err) {
-      setServerError(errorMessage(err));
-    }
-  }
-
-  async function handleArchive() {
+  async function handleUnpublish() {
     if (!promotion) return;
-    if (!window.confirm(`เก็บถาวร "${promotion.title}"? โปรจะหยุดแสดงและแก้ไขไม่ได้อีก`)) return;
+    if (
+      !window.confirm(
+        `ตั้ง "${promotion.title}" เป็น unpublic? โปรจะหยุดแสดงใน LINE OA`,
+      )
+    )
+      return;
     try {
-      const result = await archive.mutateAsync(promotion.id);
+      const result = await unpublish.mutateAsync(promotion.id);
       setWarnings(result.warnings);
       setServerError(null);
     } catch (err) {
@@ -189,10 +203,13 @@ export function PromotionForm({
         description={
           promotion
             ? "แก้ไขรายละเอียด ช่วงเวลาแสดงผล และกลุ่มเป้าหมาย"
-            : "บันทึกเป็นร่างก่อนได้ แล้วค่อยเผยแพร่เมื่อข้อมูลครบ"
+            : "บันทึกแล้วแสดงใน LINE OA ทันที หากข้อมูลยังไม่ครบจะบันทึกเป็น unpublic"
         }
         actions={
-          <Link href="/promotions" className="text-sm text-primary underline-offset-4 hover:underline">
+          <Link
+            href="/promotions"
+            className="text-sm text-primary underline-offset-4 hover:underline"
+          >
             กลับไปหน้ารายการ
           </Link>
         }
@@ -205,7 +222,8 @@ export function PromotionForm({
       )}
       {archived && (
         <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-800">
-          โปรนี้ถูกเก็บถาวรแล้ว แก้ไขหรือเผยแพร่ไม่ได้ — ใช้ “ทำสำเนา” เพื่อสร้างร่างใหม่
+          โปรนี้ถูกเก็บถาวรแล้ว แก้ไขหรือเผยแพร่ไม่ได้ — ใช้ “ทำสำเนา”
+          เพื่อสร้างร่างใหม่
         </p>
       )}
       {warnings.length > 0 && (
@@ -222,13 +240,67 @@ export function PromotionForm({
         </div>
       )}
       {serverError && (
-        <p role="alert" className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
+        <p
+          role="alert"
+          className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700"
+        >
           {serverError}
         </p>
       )}
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_375px] lg:items-start">
         <div className="space-y-6">
+          {canManage && !archived && (
+            <section className="flex flex-wrap items-center gap-2 rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
+              <Button type="button" onClick={handleSave} disabled={busy}>
+                {create.isPending || update.isPending ? (
+                  <Loader2
+                    className="mr-1 h-4 w-4 animate-spin"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <Save className="mr-1 h-4 w-4" aria-hidden="true" />
+                )}
+                {promotion?.status === "published"
+                  ? "บันทึก"
+                  : "บันทึกและเผยแพร่"}
+              </Button>
+              {canUnpublish && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleUnpublish}
+                  disabled={busy}
+                >
+                  <EyeOff className="mr-1 h-4 w-4" aria-hidden="true" />
+                  ตั้งเป็น unpublic
+                </Button>
+              )}
+              {promotion && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleDuplicate}
+                  disabled={busy}
+                >
+                  <Copy className="mr-1 h-4 w-4" aria-hidden="true" />
+                  ทำสำเนา
+                </Button>
+              )}
+              {canDelete && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={handleDelete}
+                  disabled={busy}
+                  className="ml-auto"
+                >
+                  <Trash2 className="mr-1 h-4 w-4" aria-hidden="true" />
+                  ลบ
+                </Button>
+              )}
+            </section>
+          )}
           <section className="space-y-4 rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
             <h2 className="text-sm font-semibold">ข้อมูลโปรโมชั่น</h2>
 
@@ -244,7 +316,9 @@ export function PromotionForm({
               />
               <div className="flex justify-between gap-2">
                 <FieldError message={errors.title} />
-                <span className="ml-auto text-xs text-muted-foreground">{values.title.length}/120</span>
+                <span className="ml-auto text-xs text-muted-foreground">
+                  {values.title.length}/120
+                </span>
               </div>
             </div>
 
@@ -290,7 +364,8 @@ export function PromotionForm({
               error={errors.displayEnd ?? errors.displayStart}
             />
             <p className="text-xs text-muted-foreground">
-              ระบบคำนวณสถานะจากเวลานี้เอง — ตั้งเวลาไว้ล่วงหน้าได้ ไม่ต้องกลับมากดเผยแพร่ซ้ำ
+              ระบบคำนวณสถานะจากเวลานี้เอง — ตั้งเวลาไว้ล่วงหน้าได้
+              ไม่ต้องกลับมากดเผยแพร่ซ้ำ
             </p>
 
             <div className="grid gap-4 sm:grid-cols-2">
@@ -300,7 +375,12 @@ export function PromotionForm({
                   id="pf-placement"
                   value={values.placement}
                   disabled={readOnly}
-                  onChange={(e) => set("placement", e.target.value as PromotionFormValues["placement"])}
+                  onChange={(e) =>
+                    set(
+                      "placement",
+                      e.target.value as PromotionFormValues["placement"],
+                    )
+                  }
                 >
                   {PLACEMENTS.map((p) => (
                     <option key={p} value={p}>
@@ -335,7 +415,12 @@ export function PromotionForm({
                   id="pf-cta"
                   value={values.ctaType}
                   disabled={readOnly}
-                  onChange={(e) => set("ctaType", e.target.value as PromotionFormValues["ctaType"])}
+                  onChange={(e) =>
+                    set(
+                      "ctaType",
+                      e.target.value as PromotionFormValues["ctaType"],
+                    )
+                  }
                 >
                   {CTA_TYPES.map((t) => (
                     <option key={t} value={t}>
@@ -357,7 +442,11 @@ export function PromotionForm({
                     id="pf-cta-target"
                     value={values.ctaTarget}
                     disabled={readOnly}
-                    placeholder={values.ctaType === "url" ? "https://example.com/promo" : "เช่น 123"}
+                    placeholder={
+                      values.ctaType === "url"
+                        ? "https://example.com/promo"
+                        : "เช่น 123"
+                    }
                     onChange={(e) => set("ctaTarget", e.target.value)}
                   />
                   <FieldError message={errors.ctaTarget} />
@@ -369,13 +458,16 @@ export function PromotionForm({
           <section className="space-y-4 rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
             <h2 className="text-sm font-semibold">กลุ่มเป้าหมาย</h2>
             <p className="text-xs text-muted-foreground">
-              ไม่เลือกอะไรเลย = สมาชิกทุกคนเห็น · เลือกหลายเงื่อนไข = ต้องตรงทุกเงื่อนไข
+              ไม่เลือกอะไรเลย = สมาชิกทุกคนเห็น · เลือกหลายเงื่อนไข =
+              ต้องตรงทุกเงื่อนไข
             </p>
 
             <div className="space-y-2">
               <Label>ระดับสมาชิก</Label>
               {tiers.isLoading ? (
-                <p className="text-xs text-muted-foreground">กำลังโหลดระดับสมาชิก…</p>
+                <p className="text-xs text-muted-foreground">
+                  กำลังโหลดระดับสมาชิก…
+                </p>
               ) : tiers.isError ? (
                 <p className="text-xs text-red-600">โหลดระดับสมาชิกไม่สำเร็จ</p>
               ) : (
@@ -387,7 +479,9 @@ export function PromotionForm({
                         key={tier.id}
                         className={cn(
                           "inline-flex cursor-pointer items-center gap-2 rounded-md border px-3 py-1.5 text-sm",
-                          checked ? "border-primary bg-primary/5" : "border-neutral-200",
+                          checked
+                            ? "border-primary bg-primary/5"
+                            : "border-neutral-200",
                           readOnly && "cursor-not-allowed opacity-60",
                         )}
                       >
@@ -401,7 +495,9 @@ export function PromotionForm({
                               "tiers",
                               e.target.checked
                                 ? [...values.tiers, tier.code]
-                                : values.tiers.filter((code) => code !== tier.code),
+                                : values.tiers.filter(
+                                    (code) => code !== tier.code,
+                                  ),
                             )
                           }
                         />
@@ -429,52 +525,14 @@ export function PromotionForm({
             </div>
           </section>
 
-          {canManage && !archived && (
-            <section className="flex flex-wrap items-center gap-2 rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
-              <Button type="button" onClick={handleSave} disabled={busy}>
-                {create.isPending || update.isPending ? (
-                  <Loader2 className="mr-1 h-4 w-4 animate-spin" aria-hidden="true" />
-                ) : (
-                  <Save className="mr-1 h-4 w-4" aria-hidden="true" />
-                )}
-                {promotion ? "บันทึก" : "บันทึกร่าง"}
-              </Button>
-              {promotion?.status !== "published" && (
-                <Button type="button" variant="outline" onClick={handlePublish} disabled={busy}>
-                  <Send className="mr-1 h-4 w-4" aria-hidden="true" />
-                  บันทึกและแสดงใน LINE OA
-                </Button>
-              )}
-              {canArchive && (
-                <Button type="button" variant="outline" onClick={handleArchive} disabled={busy}>
-                  <Archive className="mr-1 h-4 w-4" aria-hidden="true" />
-                  เก็บถาวร
-                </Button>
-              )}
-              {promotion && (
-                <Button type="button" variant="outline" onClick={handleDuplicate} disabled={busy}>
-                  <Copy className="mr-1 h-4 w-4" aria-hidden="true" />
-                  ทำสำเนา
-                </Button>
-              )}
-              {canDelete && (
-                <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={handleDelete}
-                  disabled={busy}
-                  className="ml-auto"
-                >
-                  <Trash2 className="mr-1 h-4 w-4" aria-hidden="true" />
-                  ลบ
-                </Button>
-              )}
-            </section>
-          )}
-
           {archived && canManage && (
             <section className="flex flex-wrap gap-2 rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
-              <Button type="button" variant="outline" onClick={handleDuplicate} disabled={busy}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleDuplicate}
+                disabled={busy}
+              >
                 <Copy className="mr-1 h-4 w-4" aria-hidden="true" />
                 ทำสำเนาเป็นร่างใหม่
               </Button>

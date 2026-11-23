@@ -7,7 +7,6 @@ import { DataTable, type Column } from "@/components/common/DataTable";
 import { SearchPanel } from "@/components/common/SearchPanel";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { TwoColumnLayout } from "@/components/layout/TwoColumnLayout";
-import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,11 +14,12 @@ import { Modal } from "@/components/ui/modal";
 import { Select } from "@/components/ui/select";
 import { PERMISSIONS } from "@/features/auth/types/auth";
 import { hasPermission, useAuthStore } from "@/stores/authStore";
-import { useCreateCategory, useDeleteCategory, useDeleteReward, useRewardCategories, useRewardList, useSetRewardStatus } from "../hooks/useRewards";
+import { useCreateCategory, useDeleteCategory, useDeleteReward, useRewardCategories, useRewardList } from "../hooks/useRewards";
 import { RowActions } from "@/components/common/RowActions";
-import { showDisabledReason } from "@/features/line-oa/types/lineVisibility";
 import { describeStock } from "../schemas/rewardForm";
-import { EMPTY_REWARD_FILTERS, REWARD_STATUS_LABEL, STATUS_VARIANT, type Reward, type RewardFilters } from "../types/reward";
+import { EMPTY_REWARD_FILTERS, type Reward, type RewardFilters } from "../types/reward";
+import { PUBLIC_STATUS_LABEL } from "@/lib/publicStatus";
+import { RewardPublicSwitch } from "./RewardPublicSwitch";
 import { mediaUrl } from "@/lib/media";
 import { LineVisibilityBadge } from "@/features/line-oa/components/LineVisibilityBadge";
 
@@ -65,7 +65,7 @@ function RewardSearchPanel({ filters, onApply }: { filters: RewardFilters; onApp
           <Label htmlFor="r-status">สถานะ</Label>
           <Select id="r-status" value={draft.status} onChange={(e) => set("status", e.target.value as Draft["status"])}>
             <option value="">ทั้งหมด</option>
-            {Object.entries(REWARD_STATUS_LABEL).map(([v, l]) => (
+            {Object.entries(PUBLIC_STATUS_LABEL).map(([v, l]) => (
               <option key={v} value={v}>
                 {l}
               </option>
@@ -124,7 +124,8 @@ function CategoryManager({ open, onClose }: { open: boolean; onClose: () => void
   );
 }
 
-const columns: Column<Reward>[] = [
+function makeColumns(canManage: boolean): Column<Reward>[] {
+  return [
   {
     key: "imageUrl",
     label: "รูป",
@@ -157,25 +158,23 @@ const columns: Column<Reward>[] = [
   },
   { key: "remainingQuota", label: "แลกได้อีก", render: (r) => r.remainingQuota.toLocaleString("th-TH") },
   { key: "redeemedCount", label: "แลกไปแล้ว", render: (r) => r.redeemedCount.toLocaleString("th-TH") },
-  { key: "status", label: "สถานะ", render: (r) => <Badge variant={STATUS_VARIANT[r.status]}>{REWARD_STATUS_LABEL[r.status]}</Badge> },
+  {
+    key: "status",
+    label: "สถานะ",
+    render: (r) => <RewardPublicSwitch reward={r} canManage={canManage} />,
+  },
   { key: "lineVisibility", label: "LINE OA", render: (r) => <LineVisibilityBadge value={r.lineVisibility} /> },
-];
+  ];
+}
 
 
-/** แสดงใน LINE OA (switch on) / แก้ไข / ลบ (never redeemed). */
+/** edit / delete (never redeemed). The public switch lives in the status column. */
 function RewardRowActions({ r, canManage }: { r: Reward; canManage: boolean }) {
-  const status = useSetRewardStatus();
   const remove = useDeleteReward();
   if (!canManage) return <RowActions editHref={`/rewards/${r.id}`} confirmDelete="" />;
-  const switchable = r.status === "draft" || r.status === "inactive";
   return (
     <RowActions
       editHref={`/rewards/${r.id}`}
-      show={{
-        label: "แสดงใน LINE OA",
-        run: () => status.mutateAsync({ id: r.id, status: "active" }),
-        disabledReason: switchable ? undefined : showDisabledReason(r.lineVisibility) ?? "เปิดให้แลกอยู่แล้ว",
-      }}
       remove={{
         label: "ลบ",
         run: () => remove.mutateAsync(r.id),
@@ -228,7 +227,7 @@ export function RewardListView() {
         content={
           <DataTable
             rows={list.data?.data ?? []}
-            columns={columns}
+            columns={makeColumns(canManage)}
             meta={list.data?.meta ?? { page: filters.page, limit: filters.limit, total: 0 }}
             isLoading={list.isLoading}
             isError={list.isError}

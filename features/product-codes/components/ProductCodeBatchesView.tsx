@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { ThaiDateInput } from "@/components/form/ThaiDateInput";
 import Link from "next/link";
 import { Download, Power, Search, Settings2, XCircle } from "lucide-react";
 import { ErrorState } from "@/components/common/ErrorState";
@@ -274,11 +275,11 @@ function CreateBatchForm() {
         <div className="grid grid-cols-2 gap-2">
           <div className="space-y-1.5">
             <Label htmlFor="pc-lot-exp">วันหมดอายุสินค้า</Label>
-            <Input id="pc-lot-exp" type="date" value={form.lotExpiryDate} onChange={(e) => set("lotExpiryDate", e.target.value)} />
+            <ThaiDateInput id="pc-lot-exp" kind="date" value={form.lotExpiryDate} onChange={(v) => set("lotExpiryDate", v)} />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="pc-code-exp">รหัสใช้ได้ถึง</Label>
-            <Input id="pc-code-exp" type="date" value={form.codeExpiresAt} onChange={(e) => set("codeExpiresAt", e.target.value)} />
+            <ThaiDateInput id="pc-code-exp" kind="date" value={form.codeExpiresAt} onChange={(v) => set("codeExpiresAt", v)} />
           </div>
         </div>
         <div className="space-y-1.5">

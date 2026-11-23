@@ -39,6 +39,8 @@ export interface ImageUploadProps {
   hint?: string;
   disabled?: boolean;
   className?: string;
+  /** Validation message from the form (e.g. a required image). */
+  error?: string;
 }
 
 /**
@@ -54,6 +56,7 @@ export function ImageUpload({
   hint = "jpg, png หรือ webp ขนาดไม่เกิน 2 MB",
   disabled = false,
   className,
+  error: fieldError,
 }: ImageUploadProps) {
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -111,7 +114,12 @@ export function ImageUpload({
       <Label htmlFor={inputId}>{label}</Label>
 
       <div className="flex items-start gap-3">
-        <div className="relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-dashed border-border bg-muted">
+        <div
+          className={cn(
+            "relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-dashed border-border bg-muted",
+            fieldError && !shown && "border-destructive bg-red-50",
+          )}
+        >
           {shown ? (
             // eslint-disable-next-line @next/next/no-img-element -- uploaded files live on the API host
             <img src={shown} alt={label} className="h-full w-full object-cover" />
@@ -157,9 +165,9 @@ export function ImageUpload({
         </div>
       </div>
 
-      {error && (
+      {(error || (fieldError && !shown)) && (
         <p role="alert" className="text-xs text-destructive">
-          {error}
+          {error ?? fieldError}
         </p>
       )}
     </div>

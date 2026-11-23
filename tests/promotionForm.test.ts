@@ -20,9 +20,13 @@ function messages(values: PromotionFormValues): Record<string, string> {
 }
 
 describe("promotionFormSchema", () => {
-  it("accepts a title-only draft", () => {
-    const parsed = promotionFormSchema.safeParse(form({ title: "โปรตุลาคม" }));
+  it("accepts a draft with a title and an image", () => {
+    const parsed = promotionFormSchema.safeParse(form({ title: "โปรตุลาคม", imageUrl: "/api/v1/files/x" }));
     expect(parsed.success).toBe(true);
+  });
+
+  it("requires an uploaded image", () => {
+    expect(messages(form({ title: "โปรตุลาคม" }))).toMatchObject({ imageUrl: expect.stringContaining("อัปโหลดรูป") });
   });
 
   it("requires a title and caps its length", () => {

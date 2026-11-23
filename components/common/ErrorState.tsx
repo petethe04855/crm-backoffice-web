@@ -23,11 +23,11 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
         className,
       )}
     >
-      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-foreground mb-4">
+      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-destructive mb-4">
         <AlertCircle className="h-6 w-6" />
       </div>
       <h3 className="text-base font-semibold text-foreground">{title}</h3>
-      <p className="mt-1 text-sm text-muted-foreground max-w-sm">{message}</p>
+      <p className="mt-1 text-sm text-destructive max-w-sm">{message}</p>
       {onRetry && (
         <Button onClick={onRetry} variant="outline" size="sm" className="mt-5">
           Try Again

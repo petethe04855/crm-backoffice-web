@@ -40,20 +40,10 @@ import {
 import { PromotionCardPreview } from "./PromotionCardPreview";
 import { LineVisibilityPanel } from "@/features/line-oa/components/LineVisibilityBadge";
 
-function FieldError({
-  message,
-  textColor,
-}: {
-  message?: string;
-  textColor?: string;
-}) {
+function FieldError({ message }: { message?: string }) {
   if (!message) return null;
   return (
-    <p
-      role="alert"
-      className="text-xs text-destructive"
-      style={{ color: textColor }}
-    >
+    <p role="alert" className="text-xs text-destructive">
       {message}
     </p>
   );
@@ -325,7 +315,7 @@ export function PromotionForm({
                 onChange={(e) => set("title", e.target.value)}
               />
               <div className="flex justify-between gap-2">
-                <FieldError message={errors.title} textColor="red" />
+                <FieldError message={errors.title} />
                 <span className="ml-auto text-xs text-muted-foreground">
                   {values.title.length}/120
                 </span>
@@ -355,6 +345,7 @@ export function PromotionForm({
               onChange={(url) => set("imageUrl", url)}
               disabled={readOnly}
               label="รูปแบนเนอร์"
+              error={errors.imageUrl}
             />
           </section>
 

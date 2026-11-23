@@ -61,7 +61,7 @@ export const promotionFormSchema = z
       .min(1, "กรุณากรอกชื่อโปรโมชั่น")
       .max(120, "ชื่อต้องไม่เกิน 120 ตัวอักษร"),
     description: z.string().max(2000, "รายละเอียดต้องไม่เกิน 2,000 ตัวอักษร"),
-    imageUrl: z.string(),
+    imageUrl: z.string().trim().min(1, "กรุณาอัปโหลดรูปแบนเนอร์ (สมาชิกเห็นรูปนี้ใน LINE OA)"),
     placement: z.enum(["home_banner", "promotion_list", "popup"]),
     displayStart: z.string(),
     displayEnd: z.string(),

@@ -17,7 +17,14 @@ import {
   type Reward,
 } from "@/features/rewards/types/reward";
 
-const valid: RewardFormValues = { ...EMPTY_REWARD_FORM, name: "ขนมไก่", erpSkuId: "101", skuCode: "CHK-01", pointsCost: "40" };
+const valid: RewardFormValues = {
+  ...EMPTY_REWARD_FORM,
+  name: "ขนมไก่",
+  imageUrl: "/api/v1/files/x",
+  erpSkuId: "101",
+  skuCode: "CHK-01",
+  pointsCost: "40",
+};
 const errorsOf = (v: RewardFormValues) => {
   const r = rewardFormSchema.safeParse(v);
   return r.success ? {} : fieldErrors(r.error);
@@ -26,6 +33,10 @@ const errorsOf = (v: RewardFormValues) => {
 describe("rewardFormSchema", () => {
   it("accepts a valid reward", () => {
     expect(errorsOf(valid)).toEqual({});
+  });
+
+  it("requires an uploaded image", () => {
+    expect(errorsOf({ ...valid, imageUrl: "" })).toMatchObject({ imageUrl: expect.stringContaining("อัปโหลดรูป") });
   });
 
   it("needs an ERP SKU and a positive whole cost", () => {

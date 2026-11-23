@@ -46,7 +46,7 @@ export const rewardFormSchema = z
   .object({
     name: z.string().trim().min(1, "กรอกชื่อของรางวัล").max(120, "ยาวได้ไม่เกิน 120 ตัวอักษร"),
     description: z.string().max(2000, "ยาวได้ไม่เกิน 2,000 ตัวอักษร"),
-    imageUrl: z.string(),
+    imageUrl: z.string().trim().min(1, "กรุณาอัปโหลดรูปของรางวัล (สมาชิกเห็นรูปนี้ใน LINE OA)"),
     categoryId: z.string(),
     erpSkuId: z.string().refine((v) => whole(v) && Number(v) > 0, "เลือกสินค้า (SKU) จาก ERP"),
     skuCode: z.string(),

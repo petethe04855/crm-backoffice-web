@@ -254,7 +254,7 @@ export function RewardForm({ reward, canManage }: { reward?: Reward; canManage: 
             <Field id="rw-desc" label="รายละเอียด" error={errors.description}>
               <Textarea id="rw-desc" rows={3} value={values.description} onChange={(e) => set("description", e.target.value)} />
             </Field>
-            <ImageUpload value={values.imageUrl} onChange={(url) => set("imageUrl", url)} label="รูป" disabled={readOnly} />
+            <ImageUpload value={values.imageUrl} onChange={(url) => set("imageUrl", url)} label="รูป" disabled={readOnly} error={errors.imageUrl} />
             <Field id="rw-cat" label="หมวด">
               <Select id="rw-cat" value={values.categoryId} onChange={(e) => set("categoryId", e.target.value)}>
                 <option value="">ไม่มีหมวด</option>

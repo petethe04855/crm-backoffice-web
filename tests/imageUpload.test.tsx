@@ -129,3 +129,14 @@ describe("ImageUpload", () => {
     expect(screen.queryByRole("img")).not.toBeInTheDocument();
   });
 });
+
+describe("ImageUpload field error", () => {
+  it("shows the form's required-image message in red until an image is set", () => {
+    const { rerender } = render(<ImageUpload value="" onChange={() => {}} label="รูปแบนเนอร์" error="กรุณาอัปโหลดรูปแบนเนอร์" />);
+    const alert = screen.getByRole("alert");
+    expect(alert).toHaveTextContent("กรุณาอัปโหลดรูปแบนเนอร์");
+    expect(alert).toHaveClass("text-destructive");
+    rerender(<ImageUpload value="/api/v1/files/x" onChange={() => {}} label="รูปแบนเนอร์" error="กรุณาอัปโหลดรูปแบนเนอร์" />);
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+});

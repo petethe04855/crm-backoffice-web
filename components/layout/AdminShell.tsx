@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { NAV_ITEMS } from "@/components/layout/nav";
+import { NAV_ITEMS, activeNavHref } from "@/components/layout/nav";
 import { cn } from "@/lib/utils";
 import { hasPermission, useAuthStore } from "@/stores/authStore";
 
@@ -16,6 +16,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const session = useAuthStore((s) => s.session);
   const logout = useAuthStore((s) => s.logout);
   const items = NAV_ITEMS.filter((i) => hasPermission(session, i.permission));
+  const activeHref = activeNavHref(pathname, items.map((i) => i.href));
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-neutral-50">
@@ -26,7 +27,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         </div>
         <nav className="flex lg:flex-col gap-1 p-3 overflow-x-auto">
           {items.map(({ href, label, icon: Icon }) => {
-            const active = pathname === href || pathname.startsWith(`${href}/`);
+            const active = href === activeHref;
             return (
               <Link
                 key={href}

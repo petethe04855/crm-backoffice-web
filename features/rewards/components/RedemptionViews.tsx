@@ -32,6 +32,7 @@ import {
   type RedemptionFilters,
 } from "../types/reward";
 import { RewardForm } from "./RewardForm";
+import { RedemptionMemberView } from "@/features/line-oa/components/RedemptionMemberView";
 
 /** Next-step and cancel buttons with the ship / cancel dialogs. */
 export function RedemptionActions({ rd }: { rd: Redemption }) {
@@ -139,6 +140,13 @@ const redemptionColumns: Column<Redemption>[] = [
   { key: "shipProvince", label: "จังหวัด" },
   { key: "status", label: "สถานะ", render: statusBadge },
   { key: "trackingNo", label: "เลขพัสดุ / เหตุผล", render: (r) => r.trackingNo || r.cancelReason || "—" },
+  {
+    key: "lineMessages",
+    label: "สมาชิกเห็นใน LINE OA",
+    render: (r) => (
+      <RedemptionMemberView status={r.status} trackingNo={r.trackingNo} cancelReason={r.cancelReason} lineMessages={r.lineMessages} />
+    ),
+  },
 ];
 
 type Draft = Pick<RedemptionFilters, "search" | "status" | "dateFrom" | "dateTo">;

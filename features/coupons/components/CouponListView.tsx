@@ -14,7 +14,9 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { PERMISSIONS } from "@/features/auth/types/auth";
 import { hasPermission, useAuthStore } from "@/stores/authStore";
-import { useCouponList } from "../hooks/useCoupons";
+import { useCouponList, useCouponTransition, useDeleteCoupon } from "../hooks/useCoupons";
+import { RowActions } from "@/components/common/RowActions";
+import { showDisabledReason } from "@/features/line-oa/types/lineVisibility";
 import { describeBenefit, describeExpiry, describeQuota } from "../lib/benefit";
 import {
   CHANNEL_LABEL,
@@ -24,6 +26,7 @@ import {
   type Coupon,
   type CouponFilters,
 } from "../types/coupon";
+import { LineVisibilityBadge } from "@/features/line-oa/components/LineVisibilityBadge";
 
 type Draft = Pick<CouponFilters, "search" | "month" | "status" | "channel">;
 
@@ -90,11 +93,7 @@ const columns: Column<Coupon>[] = [
   {
     key: "name",
     label: "ชื่อ",
-    render: (c) => (
-      <Link href={`/coupons/${c.id}`} className="font-medium text-neutral-900 hover:underline">
-        {c.name}
-      </Link>
-    ),
+    render: (c) => <span className="font-medium text-neutral-900">{c.name}</span>,
   },
   { key: "benefitType", label: "สิทธิ์", render: (c) => describeBenefit(c) },
   {
@@ -111,7 +110,32 @@ const columns: Column<Coupon>[] = [
     label: "สถานะ",
     render: (c) => <Badge variant={STATUS_VARIANT[c.status]}>{COUPON_STATUS_LABEL[c.status]}</Badge>,
   },
+  { key: "lineVisibility", label: "LINE OA", render: (c) => <LineVisibilityBadge value={c.lineVisibility} /> },
 ];
+
+/** แสดงใน LINE OA (activate) / แก้ไข / ลบ (nobody claimed it yet). */
+function CouponRowActions({ c, canManage }: { c: Coupon; canManage: boolean }) {
+  const transition = useCouponTransition();
+  const remove = useDeleteCoupon();
+  if (!canManage) return <RowActions editHref={`/coupons/${c.id}`} confirmDelete="" />;
+  const activatable = c.status === "draft" || c.status === "paused";
+  return (
+    <RowActions
+      editHref={`/coupons/${c.id}`}
+      show={{
+        label: "แสดงใน LINE OA",
+        run: () => transition.mutateAsync({ id: c.id, action: "activate" }),
+        disabledReason: activatable ? undefined : showDisabledReason(c.lineVisibility) ?? "เปิดให้แลกอยู่แล้ว",
+      }}
+      remove={{
+        label: "ลบ",
+        run: () => remove.mutateAsync(c.id),
+        disabledReason: c.claimedCount === 0 ? undefined : "มีสมาชิกแลกไปแล้ว ลบไม่ได้ — ใช้ \"ปิดคูปอง\" ในหน้าแก้ไข",
+      }}
+      confirmDelete={`ลบคูปอง "${c.name}"? การลบย้อนกลับไม่ได้`}
+    />
+  );
+}
 
 /** /coupons — SearchPanel + table. */
 export function CouponListView() {
@@ -155,6 +179,7 @@ export function CouponListView() {
             onRetry={() => list.refetch()}
             onPageChange={(page) => setFilters((f) => ({ ...f, page }))}
             onLimitChange={(limit) => setFilters((f) => ({ ...f, limit, page: 1 }))}
+            actions={(c) => <CouponRowActions c={c} canManage={canManage} />}
           />
         }
       />

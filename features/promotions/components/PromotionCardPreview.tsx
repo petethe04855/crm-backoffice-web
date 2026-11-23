@@ -2,6 +2,7 @@
 
 import { ImagePlus } from "lucide-react";
 import { CTA_TYPE_LABEL, PLACEMENT_LABEL, type PromotionCTAType, type PromotionPlacement } from "../types/promotion";
+import { mediaUrl } from "@/lib/media";
 
 const CTA_BUTTON_LABEL: Record<PromotionCTAType, string> = {
   none: "",
@@ -38,7 +39,7 @@ export function PromotionCardPreview({ values }: { values: PromotionCardPreviewI
         <div className="flex aspect-[16/9] items-center justify-center bg-neutral-100">
           {values.imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element -- uploaded files live on the API host
-            <img src={values.imageUrl} alt={title} className="h-full w-full object-cover" />
+            <img src={mediaUrl(values.imageUrl)} alt={title} className="h-full w-full object-cover" />
           ) : (
             <div className="flex flex-col items-center gap-1 text-neutral-400">
               <ImagePlus className="h-6 w-6" aria-hidden="true" />

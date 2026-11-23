@@ -1,12 +1,16 @@
 "use client";
 
-import Link from "next/link";
 import { ImagePlus } from "lucide-react";
 import { DataTable, type Column } from "@/components/common/DataTable";
+import { RowActions } from "@/components/common/RowActions";
 import { formatThaiDateTime } from "@/lib/utils";
 import type { ApiListResponse } from "@/types/api";
 import { PLACEMENT_LABEL, type Promotion } from "../types/promotion";
 import { PromotionStatusBadge } from "./PromotionStatusBadge";
+import { mediaUrl } from "@/lib/media";
+import { LineVisibilityBadge } from "@/features/line-oa/components/LineVisibilityBadge";
+import { showDisabledReason } from "@/features/line-oa/types/lineVisibility";
+import { useDeletePromotion, usePublishPromotion } from "../hooks/usePromotions";
 
 /** "18 พ.ย. 2569 10:00 → 20 พ.ย. 2569 20:00", or "ยังไม่กำหนด". */
 export function formatWindow(p: Pick<Promotion, "displayStartAt" | "displayEndAt">): string {
@@ -24,7 +28,7 @@ function Thumbnail({ src, alt }: { src: string; alt: string }) {
   }
   return (
     // eslint-disable-next-line @next/next/no-img-element -- uploaded files live on the API host
-    <img src={src} alt={alt} className="h-10 w-16 rounded border border-neutral-200 object-cover" />
+    <img src={mediaUrl(src)} alt={alt} className="h-10 w-16 rounded border border-neutral-200 object-cover" />
   );
 }
 
@@ -37,17 +41,37 @@ const columns: Column<Promotion>[] = [
   {
     key: "title",
     label: "ชื่อ",
-    render: (p) => (
-      <Link href={`/promotions/${p.id}`} className="font-medium text-neutral-900 hover:underline">
-        {p.title}
-      </Link>
-    ),
+    render: (p) => <span className="font-medium text-neutral-900">{p.title}</span>,
   },
   { key: "placement", label: "ตำแหน่ง", render: (p) => PLACEMENT_LABEL[p.placement] },
   { key: "displayStartAt", label: "ช่วงที่แสดง", render: (p) => formatWindow(p) },
   { key: "displayStatus", label: "สถานะ", render: (p) => <PromotionStatusBadge status={p.displayStatus} /> },
+  { key: "lineVisibility", label: "LINE OA", render: (p) => <LineVisibilityBadge value={p.lineVisibility} /> },
   { key: "priority", label: "ลำดับ", render: (p) => String(p.priority) },
 ];
+
+/** แสดงใน LINE OA (publish a draft) / แก้ไข / ลบ (drafts only). */
+function PromotionRowActions({ p, canManage }: { p: Promotion; canManage: boolean }) {
+  const publish = usePublishPromotion();
+  const remove = useDeletePromotion();
+  if (!canManage) return <RowActions editHref={`/promotions/${p.id}`} confirmDelete="" />;
+  return (
+    <RowActions
+      editHref={`/promotions/${p.id}`}
+      show={{
+        label: "แสดงใน LINE OA",
+        run: () => publish.mutateAsync(p.id),
+        disabledReason: p.status === "draft" ? undefined : showDisabledReason(p.lineVisibility) ?? "เผยแพร่แล้ว",
+      }}
+      remove={{
+        label: "ลบ",
+        run: () => remove.mutateAsync(p.id),
+        disabledReason: p.status === "draft" ? undefined : "ลบได้เฉพาะฉบับร่าง — โปรที่เผยแพร่แล้วให้กด \"เก็บถาวร\" ในหน้าแก้ไข",
+      }}
+      confirmDelete={`ลบโปรโมชั่น "${p.title}"? การลบย้อนกลับไม่ได้`}
+    />
+  );
+}
 
 /** Column 2 of the promotion page. */
 export function PromotionTable({
@@ -57,7 +81,9 @@ export function PromotionTable({
   onRetry,
   onPageChange,
   onLimitChange,
+  canManage = false,
 }: {
+  canManage?: boolean;
   data: ApiListResponse<Promotion> | undefined;
   isLoading: boolean;
   isError: boolean;
@@ -75,6 +101,7 @@ export function PromotionTable({
       onRetry={onRetry}
       onPageChange={onPageChange}
       onLimitChange={onLimitChange}
+      actions={(p) => <PromotionRowActions p={p} canManage={canManage} />}
     />
   );
 }

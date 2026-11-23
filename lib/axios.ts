@@ -7,8 +7,10 @@ function apiRoot(raw: string | undefined, fallback: string): string {
   return (raw || fallback).replace(/\/api(?:\/v1)?(?:\/crm)?\/?$/, "").replace(/\/$/, "");
 }
 
-export const CRM_API_BASE_URL =
-  apiRoot(process.env.NEXT_PUBLIC_BACKOFFICE_API_URL, "http://localhost:8090") + "/api/v1/crm";
+/** backoffice-api origin (no /api suffix); uploaded images are served from it. */
+export const BACKOFFICE_API_ROOT = apiRoot(process.env.NEXT_PUBLIC_BACKOFFICE_API_URL, "http://localhost:8090");
+
+export const CRM_API_BASE_URL = BACKOFFICE_API_ROOT + "/api/v1/crm";
 export const ERP_API_BASE_URL =
   apiRoot(process.env.NEXT_PUBLIC_ERP_API_URL, "http://localhost:8084") + "/api/v1";
 

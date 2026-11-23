@@ -120,7 +120,8 @@ describe("ImageUpload", () => {
 
     expect(screen.getByRole("img", { name: "รูปโปรโมชั่น" })).toHaveAttribute(
       "src",
-      "/api/v1/files/existing",
+      // stored paths are loaded from backoffice-api, not the Next.js origin
+      "http://localhost:8090/api/v1/files/existing",
     );
 
     fireEvent.click(screen.getByRole("button", { name: /ลบรูป/ }));

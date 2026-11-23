@@ -46,4 +46,7 @@ export const PERMISSIONS = {
   couponsUse: "coupons.use",
   settingsView: "settings.view",
   settingsManage: "settings.manage",
+  consentsManage: "consents.manage",
+  productCodesManage: "product_codes.manage",
+  productCodesExport: "product_codes.export",
 } as const;

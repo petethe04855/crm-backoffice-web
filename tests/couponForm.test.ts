@@ -78,7 +78,7 @@ describe("toCouponInput", () => {
       id: 1, name: "ลด 10%", description: "", imageUrl: "", terms: "", benefitType: "percent_off", benefitValue: 10,
       maxDiscount: 100, minSpend: 300, pointsCost: 50, claimStartAt: null, claimEndAt: null, expiryMode: "days_after_claim",
       expiresAt: null, validDays: 14, totalQuota: 100, claimedCount: 3, usedCount: 1, remainingQuota: 97, limitPerMember: 2,
-      minTierId: 2, channel: "store", codeType: "unique", sharedCode: "", status: "active", updatedByEmail: "",
+      minTierId: 2, channel: "store", codeType: "unique", sharedCode: "", status: "active", lineVisibility: { visible: true, reason: "live" }, updatedByEmail: "",
       createdAt: "2026-11-01T00:00:00Z", updatedAt: "2026-11-01T00:00:00Z",
     };
     expect(toCouponInput(toCouponFormValues(coupon))).toMatchObject({

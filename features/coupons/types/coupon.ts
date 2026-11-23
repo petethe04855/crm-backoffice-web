@@ -1,3 +1,5 @@
+import type { LineVisibility } from "@/features/line-oa/types/lineVisibility";
+
 /** Mirrors backoffice-api dto/coupon_dto.go. */
 
 export type BenefitType = "amount_off" | "percent_off" | "free_shipping" | "free_item";
@@ -34,6 +36,8 @@ export interface Coupon {
   codeType: CodeType;
   sharedCode: string;
   status: CouponStatus;
+  /** Shown in the LINE OA right now (computed by the API). */
+  lineVisibility: LineVisibility;
   updatedByEmail: string;
   createdAt: string;
   updatedAt: string;

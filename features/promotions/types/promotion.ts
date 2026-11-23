@@ -1,3 +1,5 @@
+import type { LineVisibility } from "@/features/line-oa/types/lineVisibility";
+
 /** Where a promotion appears in the LINE app (mirrors crm-core/domain/promotion). */
 export type PromotionPlacement = "home_banner" | "promotion_list" | "popup";
 
@@ -30,6 +32,8 @@ export interface Promotion {
   status: PromotionStatus;
   /** Computed by the API from the display window; never stored. */
   displayStatus: PromotionDisplayStatus;
+  /** Shown in the LINE OA right now (computed by the API). */
+  lineVisibility: LineVisibility;
   /** Non-blocking notices (e.g. six home banners at once). */
   warnings: string[];
   createdBy: number;

@@ -51,6 +51,32 @@ export function useSaveReward() {
   });
 }
 
+/**
+ * Saves the reward, then switches it on so members see it in the LINE OA
+ * catalogue. The API validates both steps; an active reward is only saved.
+ */
+export function useSaveAndShowReward() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, input }: { id?: number; input: RewardInput }) => {
+      const saved = id ? await rewardsApi.update(id, input) : await rewardsApi.create(input);
+      if (saved.status === "draft" || saved.status === "inactive") {
+        return rewardsApi.setStatus(saved.id, "active");
+      }
+      return saved;
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: rewardKeys.all }),
+  });
+}
+
+export function useDeleteReward() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => rewardsApi.remove(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: rewardKeys.all }),
+  });
+}
+
 export function useSetRewardStatus() {
   const qc = useQueryClient();
   return useMutation({
@@ -59,15 +85,16 @@ export function useSetRewardStatus() {
   });
 }
 
-/** ERP SKU search for the form; runs only for 2+ characters. */
-export function useERPSKUSearch(query: string) {
-  const q = query.trim();
+/** ERP SKUs for the reward dropdown; an empty filter lists the first 100. */
+export function useERPSKUOptions(filter: string, enabled = true) {
+  const q = filter.trim();
   return useQuery({
     queryKey: rewardKeys.skus(q),
-    queryFn: () => rewardsApi.searchSKUs(q),
-    enabled: q.length >= 2,
-    staleTime: 30_000,
+    queryFn: () => rewardsApi.listSKUs(q),
+    enabled,
+    staleTime: 60_000,
     retry: false,
+    placeholderData: keepPreviousData,
   });
 }
 

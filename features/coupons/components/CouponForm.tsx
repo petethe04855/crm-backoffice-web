@@ -10,7 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useTiers } from "@/features/membership/hooks/useMembers";
-import { useSaveCoupon } from "../hooks/useCoupons";
+import { useSaveAndShowCoupon, useSaveCoupon } from "../hooks/useCoupons";
+import { LineVisibilityPanel } from "@/features/line-oa/components/LineVisibilityBadge";
 import { describeBenefit } from "../lib/benefit";
 import {
   EMPTY_COUPON_FORM,
@@ -21,6 +22,7 @@ import {
   type CouponFormValues,
 } from "../schemas/couponForm";
 import { BENEFIT_LABEL, CHANNEL_LABEL, type Coupon } from "../types/coupon";
+import { mediaUrl } from "@/lib/media";
 
 function Field({ id, label, error, hint, children }: { id: string; label: string; error?: string; hint?: string; children: ReactNode }) {
   return (
@@ -57,7 +59,7 @@ export function CouponCardPreview({ v }: { v: CouponFormValues }) {
     <div className="w-full max-w-[375px] overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
       {v.imageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element -- uploaded files live on the API host
-        <img src={v.imageUrl} alt="" className="h-32 w-full object-cover" />
+        <img src={mediaUrl(v.imageUrl)} alt="" className="h-32 w-full object-cover" />
       ) : (
         <div className="flex h-32 items-center justify-center bg-neutral-100 text-neutral-400">
           <Ticket className="h-8 w-8" aria-hidden="true" />
@@ -86,6 +88,7 @@ export function CouponForm({ coupon, canManage, extraActions }: { coupon?: Coupo
   const router = useRouter();
   const tiers = useTiers();
   const save = useSaveCoupon();
+  const saveAndShow = useSaveAndShowCoupon();
   const [values, setValues] = useState<CouponFormValues>(() => (coupon ? toCouponFormValues(coupon) : EMPTY_COUPON_FORM));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saved, setSaved] = useState(false);
@@ -98,15 +101,15 @@ export function CouponForm({ coupon, canManage, extraActions }: { coupon?: Coupo
     setSaved(false);
   };
 
-  const submit = (e: FormEvent) => {
-    e.preventDefault();
+  const submit = (e: FormEvent | null, show = false) => {
+    e?.preventDefault();
     const parsed = couponFormSchema.safeParse(values);
     if (!parsed.success) {
       setErrors(fieldErrors(parsed.error));
       return;
     }
     setErrors({});
-    save.mutate(
+    (show ? saveAndShow : save).mutate(
       { id: coupon?.id, input: toCouponInput(values) },
       {
         onSuccess: (c) => {
@@ -116,6 +119,9 @@ export function CouponForm({ coupon, canManage, extraActions }: { coupon?: Coupo
       },
     );
   };
+  const pending = save.isPending || saveAndShow.isPending;
+  const saveError = saveAndShow.error ?? save.error;
+  const canShow = !coupon || coupon.status === "draft" || coupon.status === "paused";
 
   const hasValue = values.benefitType === "amount_off" || values.benefitType === "percent_off";
   const marketplace = values.channel === "shopee" || values.channel === "tiktok";
@@ -266,17 +272,23 @@ export function CouponForm({ coupon, canManage, extraActions }: { coupon?: Coupo
           <p className="text-xs text-neutral-500">ตัวอย่างที่ลูกค้าเห็นใน LINE</p>
           <CouponCardPreview v={values} />
         </div>
+        <LineVisibilityPanel value={coupon?.lineVisibility} />
         {!readOnly && (
           <div className="space-y-2">
-            <Button type="submit" className="w-full" disabled={save.isPending}>
+            {canShow && (
+              <Button type="button" className="w-full" disabled={pending} onClick={() => submit(null, true)}>
+                {saveAndShow.isPending ? "กำลังบันทึก…" : "บันทึกและแสดงใน LINE OA"}
+              </Button>
+            )}
+            <Button type="submit" variant={canShow ? "outline" : "default"} className="w-full" disabled={pending}>
               {save.isPending ? "กำลังบันทึก…" : coupon ? "บันทึกการแก้ไข" : "บันทึกเป็นฉบับร่าง"}
             </Button>
-            {save.error && (
+            {saveError && (
               <p role="alert" className="text-sm text-red-600">
-                {save.error.message}
+                {saveError.message}
               </p>
             )}
-            {saved && !save.error && <p className="text-sm text-green-700">บันทึกแล้ว</p>}
+            {saved && !saveError && <p className="text-sm text-green-700">บันทึกแล้ว</p>}
           </div>
         )}
         {extraActions}

@@ -7,7 +7,7 @@ export default function NewCouponPage() {
   return (
     <RequirePermission permission={PERMISSIONS.couponsManage}>
       <div className="space-y-6">
-        <PageHeader title="สร้างคูปอง" description="บันทึกเป็นฉบับร่างก่อน แล้วกดเปิดให้แลกในหน้ารายละเอียด" />
+        <PageHeader title="สร้างคูปอง" description="กด “บันทึกและแสดงใน LINE OA” เพื่อเปิดให้สมาชิกแลกทันที หรือบันทึกเป็นฉบับร่างไว้ก่อน" />
         <CouponForm canManage />
       </div>
     </RequirePermission>

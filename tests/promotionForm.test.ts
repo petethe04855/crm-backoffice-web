@@ -138,6 +138,7 @@ describe("toFormValues / toDateTimeLocal", () => {
     priority: 7,
     status: "published",
     displayStatus: "scheduled",
+    lineVisibility: { visible: false, reason: "not_started" },
     warnings: [],
     createdBy: 1,
     createdByEmail: "o@example.com",

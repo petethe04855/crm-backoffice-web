@@ -27,6 +27,7 @@ function promo(id: string, start: string | null, end: string | null, priority = 
     priority,
     status: "published",
     displayStatus: "live",
+    lineVisibility: { visible: true, reason: "live" },
     warnings: [],
     createdBy: 1,
     createdByEmail: "o@example.com",

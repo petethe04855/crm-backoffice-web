@@ -63,7 +63,7 @@ describe("toRewardInput", () => {
     const r: Reward = {
       id: 1, name: "ขนมไก่", description: "", imageUrl: "", categoryId: 2, type: "physical", erpSkuId: 101,
       skuCode: "CHK-01", skuName: "ขนมไก่", erpWarehouseId: 1, qtyPerRedemption: 2, pointsCost: 40, stockLimit: 0,
-      limitPerMember: 3, minTierId: null, availableFrom: null, availableTo: null, status: "active", redeemedCount: 1,
+      limitPerMember: 3, minTierId: null, availableFrom: null, availableTo: null, status: "active", lineVisibility: { visible: true, reason: "live" }, redeemedCount: 1,
       sortOrder: 5, erpAvailableQty: 8, stockSyncedAt: null, stockStale: false, remainingQuota: 4, updatedByEmail: "",
       updatedAt: "2026-11-19T00:00:00Z",
     };
@@ -100,5 +100,12 @@ describe("redemption actions", () => {
     expect(NEXT_ACTION.delivered).toBeUndefined();
     expect(CANCELLABLE).not.toContain("shipped");
     expect(CANCELLABLE).toContain("packing");
+  });
+});
+
+describe("skuOptionLabel", () => {
+  it("shows code, name and ERP stock in the dropdown", async () => {
+    const { skuOptionLabel } = await import("@/features/rewards/components/RewardForm");
+    expect(skuOptionLabel({ code: "SKU-01", name: "อกไก่", availableQty: 1200 })).toBe("SKU-01 · อกไก่ (สต็อก 1,200)");
   });
 });

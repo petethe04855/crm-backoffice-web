@@ -1,3 +1,5 @@
+import type { LineVisibility, RedemptionLineMessages } from "@/features/line-oa/types/lineVisibility";
+
 /** Mirrors backoffice-api dto/reward_dto.go. */
 
 export type RewardStatus = "draft" | "active" | "inactive" | "archived";
@@ -29,6 +31,8 @@ export interface Reward {
   availableFrom: string | null;
   availableTo: string | null;
   status: RewardStatus;
+  /** Shown in the LINE OA right now (computed by the API). */
+  lineVisibility: LineVisibility;
   redeemedCount: number;
   sortOrder: number;
   /** null = never synced from the ERP. */
@@ -98,6 +102,8 @@ export interface Redemption {
   deliveredAt: string | null;
   cancelledAt: string | null;
   updatedByEmail: string;
+  /** LINE messages the member got (absent if not looked up). */
+  lineMessages?: RedemptionLineMessages;
 }
 
 export interface RewardFilters {

@@ -12,6 +12,7 @@ import {
 import { useUploadImage } from "@/features/uploads/hooks/useUploadImage";
 import type { UploadedImage } from "@/features/uploads/types/upload";
 import { cn } from "@/lib/utils";
+import { mediaUrl } from "@/lib/media";
 
 /**
  * Fast client-side feedback only: the API is the source of truth and checks
@@ -68,7 +69,7 @@ export function ImageUpload({
     };
   }, [preview]);
 
-  const shown = preview ?? (value || null);
+  const shown = preview ?? (value ? mediaUrl(value) : null);
   const busy = upload.isPending;
 
   function handleSelect(file: File | undefined) {

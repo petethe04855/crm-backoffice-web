@@ -39,6 +39,24 @@ export function useSaveCoupon() {
   });
 }
 
+/**
+ * Saves the coupon, then activates it so members see it in the LINE OA.
+ * The API still validates both steps; an active coupon is only saved.
+ */
+export function useSaveAndShowCoupon() {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: async ({ id, input }: { id?: number; input: CouponInput }) => {
+      const saved = id ? await couponsApi.update(id, input) : await couponsApi.create(input);
+      if (saved.status === "draft" || saved.status === "paused") {
+        return couponsApi.transition(saved.id, "activate");
+      }
+      return saved;
+    },
+    onSettled: invalidate,
+  });
+}
+
 export function useCouponTransition() {
   const invalidate = useInvalidate();
   return useMutation({

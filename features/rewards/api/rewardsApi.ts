@@ -61,13 +61,20 @@ export const rewardsApi = {
     const { data } = await crmClient.patch<ApiResponse<Reward>>(`/rewards/${id}`, input);
     return data.data;
   },
+  /** Only a reward nobody redeemed can be deleted (409 otherwise). */
+  async remove(id: number): Promise<void> {
+    await crmClient.delete(`/rewards/${id}`);
+  },
   async setStatus(id: number, status: RewardStatus): Promise<Reward> {
     const { data } = await crmClient.post<ApiResponse<Reward>>(`/rewards/${id}/status`, { status });
     return data.data;
   },
-  async searchSKUs(search: string): Promise<ERPSKU[]> {
-    const { data } = await crmClient.get<ApiListResponse<ERPSKU>>("/erp/skus", { params: { search, limit: 10 } });
-    return data.data;
+  /** Active ERP SKUs for the reward dropdown (up to 100; search narrows it). */
+  async listSKUs(search = ""): Promise<{ items: ERPSKU[]; total: number }> {
+    const params: Record<string, string | number> = { limit: 100 };
+    if (search.trim()) params.search = search.trim();
+    const { data } = await crmClient.get<ApiListResponse<ERPSKU>>("/erp/skus", { params });
+    return { items: data.data, total: data.meta.total };
   },
 
   async redemptions(f: RedemptionFilters): Promise<ApiListResponse<Redemption>> {

@@ -14,7 +14,8 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useTiers } from "@/features/membership/hooks/useMembers";
 import { formatThaiDateTime } from "@/lib/utils";
-import { useERPSKUSearch, useRewardCategories, useSaveReward, useSetRewardStatus } from "../hooks/useRewards";
+import { LineVisibilityPanel } from "@/features/line-oa/components/LineVisibilityBadge";
+import { useERPSKUOptions, useRewardCategories, useSaveAndShowReward, useSaveReward, useSetRewardStatus } from "../hooks/useRewards";
 import {
   EMPTY_REWARD_FORM,
   describeStock,
@@ -46,59 +47,87 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-/** Debounced search of active ERP SKUs; picking one fills SKU id, code and name. */
-function SKUPicker({ disabled, onPick }: { disabled: boolean; onPick: (sku: ERPSKU) => void }) {
+/** "SKU-01 · อกไก่ (สต็อก 98)" — one dropdown option. */
+export function skuOptionLabel(s: Pick<ERPSKU, "code" | "name" | "availableQty">): string {
+  return `${s.code} · ${s.name} (สต็อก ${s.availableQty.toLocaleString("th-TH")})`;
+}
+
+/**
+ * Dropdown of active ERP SKUs (loaded from the ERP through backoffice-api).
+ * The filter box only appears useful when the ERP has more than 100 SKUs; it
+ * narrows the list server side. The current SKU stays selectable even when the
+ * filter hides it.
+ */
+export function SKUSelect({
+  id = "rw-sku",
+  value,
+  current,
+  disabled,
+  onPick,
+}: {
+  id?: string;
+  value: string;
+  current: { id: string; code: string; name: string };
+  disabled: boolean;
+  onPick: (sku: ERPSKU) => void;
+}) {
   const [text, setText] = useState("");
-  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState("");
   useEffect(() => {
-    const t = setTimeout(() => setQuery(text), 300);
+    const t = setTimeout(() => setFilter(text), 300);
     return () => clearTimeout(t);
   }, [text]);
-  const search = useERPSKUSearch(query);
+  const options = useERPSKUOptions(filter);
+  const items = options.data?.items ?? [];
+  const total = options.data?.total ?? 0;
+  const hasCurrent = current.id !== "" && !items.some((s) => String(s.id) === current.id);
 
   return (
     <div className="space-y-2">
-      <div className="relative">
-        <Search className="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 text-neutral-400" aria-hidden="true" />
-        <Input
-          aria-label="ค้นหาสินค้าใน ERP"
-          className="pl-8"
-          disabled={disabled}
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="พิมพ์รหัสหรือชื่อสินค้าอย่างน้อย 2 ตัว"
-        />
-      </div>
-      {search.isFetching && <p className="text-xs text-neutral-500">กำลังค้นหาใน ERP…</p>}
-      {search.isError && <p className="text-xs text-red-600">{search.error.message}</p>}
-      {search.data && search.data.length === 0 && <p className="text-xs text-neutral-500">ไม่พบสินค้า</p>}
-      {search.data && search.data.length > 0 && (
-        <ul className="max-h-60 divide-y divide-neutral-100 overflow-y-auto rounded-lg border border-neutral-200">
-          {search.data.map((s) => (
-            <li key={s.id}>
-              <button
-                type="button"
-                className="flex w-full items-center gap-3 px-3 py-2 text-left text-sm hover:bg-neutral-50"
-                onClick={() => {
-                  onPick(s);
-                  setText("");
-                  setQuery("");
-                }}
-              >
-                {s.imageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element -- ERP image host
-                  <img src={s.imageUrl} alt="" className="h-8 w-8 rounded object-cover" />
-                ) : (
-                  <span className="h-8 w-8 rounded bg-neutral-100" />
-                )}
-                <span className="flex-1">
-                  <span className="font-mono text-xs text-neutral-500">{s.code}</span> {s.name}
-                </span>
-                <span className="text-xs text-neutral-600">สต็อก {s.availableQty.toLocaleString("th-TH")}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
+      <Select
+        id={id}
+        aria-label="สินค้าจาก ERP"
+        value={value}
+        disabled={disabled || options.isLoading}
+        onChange={(e) => {
+          const sku = items.find((s) => String(s.id) === e.target.value);
+          if (sku) onPick(sku);
+        }}
+      >
+        <option value="">{options.isLoading ? "กำลังโหลดสินค้าจาก ERP…" : "เลือกสินค้าจาก ERP"}</option>
+        {hasCurrent && (
+          <option value={current.id}>
+            {current.code} · {current.name}
+          </option>
+        )}
+        {items.map((s) => (
+          <option key={s.id} value={String(s.id)}>
+            {skuOptionLabel(s)}
+          </option>
+        ))}
+      </Select>
+      {options.isError && <p className="text-xs text-red-600">{options.error.message}</p>}
+      {options.data && items.length === 0 && (
+        <p className="text-xs text-neutral-500">{filter ? "ไม่พบสินค้าตามคำค้น" : "ERP ยังไม่มีสินค้าที่เปิดขาย"}</p>
+      )}
+      {(total > items.length || filter) && !disabled && (
+        <div className="space-y-1">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 text-neutral-400" aria-hidden="true" />
+            <Input
+              aria-label="กรองสินค้าใน ERP"
+              className="pl-8"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="กรองด้วยรหัสหรือชื่อสินค้า"
+            />
+          </div>
+          {total > items.length && (
+            <p className="text-xs text-neutral-500">
+              แสดง {items.length.toLocaleString("th-TH")} จาก {total.toLocaleString("th-TH")} รายการ พิมพ์เพื่อกรอง
+            </p>
+          )}
+        </div>
       )}
     </div>
   );
@@ -122,6 +151,7 @@ export function RewardForm({ reward, canManage }: { reward?: Reward; canManage: 
   const tiers = useTiers();
   const categories = useRewardCategories();
   const save = useSaveReward();
+  const saveAndShow = useSaveAndShowReward();
   const status = useSetRewardStatus();
   const [values, setValues] = useState<RewardFormValues>(() => (reward ? toRewardFormValues(reward) : EMPTY_REWARD_FORM));
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -147,15 +177,15 @@ export function RewardForm({ reward, canManage }: { reward?: Reward; canManage: 
     setSaved(false);
   };
 
-  const submit = (e: FormEvent) => {
-    e.preventDefault();
+  const submit = (e: FormEvent | null, show = false) => {
+    e?.preventDefault();
     const parsed = rewardFormSchema.safeParse(values);
     if (!parsed.success) {
       setErrors(fieldErrors(parsed.error));
       return;
     }
     setErrors({});
-    save.mutate(
+    (show ? saveAndShow : save).mutate(
       { id: reward?.id, input: toRewardInput(values) },
       {
         onSuccess: (r) => {
@@ -165,6 +195,10 @@ export function RewardForm({ reward, canManage }: { reward?: Reward; canManage: 
       },
     );
   };
+
+  const pending = save.isPending || saveAndShow.isPending;
+  const saveError = saveAndShow.error ?? save.error;
+  const canShow = !reward || reward.status === "draft" || reward.status === "inactive";
 
   const back = (
     <Link href="/rewards" className={buttonVariants({ variant: "ghost" })}>
@@ -202,20 +236,12 @@ export function RewardForm({ reward, canManage }: { reward?: Reward; canManage: 
       <form onSubmit={submit} className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_340px]">
         <fieldset disabled={readOnly} className="space-y-5">
           <Section title="สินค้าจาก ERP">
-            {values.erpSkuId ? (
-              <div className="flex items-center justify-between rounded-lg bg-neutral-50 px-3 py-2 text-sm">
-                <span>
-                  <span className="font-mono text-xs text-neutral-500">{values.skuCode}</span> {values.skuName}
-                </span>
-                {!skuLocked && !readOnly && (
-                  <Button type="button" variant="ghost" size="sm" onClick={() => set("erpSkuId", "")}>
-                    เปลี่ยน
-                  </Button>
-                )}
-              </div>
-            ) : (
-              <SKUPicker disabled={readOnly} onPick={pick} />
-            )}
+            <SKUSelect
+              value={values.erpSkuId}
+              current={{ id: values.erpSkuId, code: values.skuCode, name: values.skuName }}
+              disabled={readOnly || skuLocked}
+              onPick={pick}
+            />
             {skuLocked && <p className="text-xs text-amber-700">มีสมาชิกแลกแล้ว เปลี่ยนสินค้าไม่ได้ (สร้างของรางวัลใหม่แทน)</p>}
             {errors.erpSkuId && <p className="text-xs text-red-600">{errors.erpSkuId}</p>}
           </Section>
@@ -280,24 +306,30 @@ export function RewardForm({ reward, canManage }: { reward?: Reward; canManage: 
         </fieldset>
 
         <aside className="space-y-4">
+          <LineVisibilityPanel value={reward?.lineVisibility} />
           {!readOnly && (
             <div className="space-y-2 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
-              <Button type="submit" className="w-full" disabled={save.isPending}>
+              {canShow && (
+                <Button type="button" className="w-full" disabled={pending} onClick={() => submit(null, true)}>
+                  {saveAndShow.isPending ? "กำลังบันทึก…" : "บันทึกและแสดงใน LINE OA"}
+                </Button>
+              )}
+              <Button type="submit" variant={canShow ? "outline" : "default"} className="w-full" disabled={pending}>
                 {save.isPending ? "กำลังบันทึก…" : reward ? "บันทึกการแก้ไข" : "บันทึกเป็นฉบับร่าง"}
               </Button>
-              {save.error && (
+              {saveError && (
                 <p role="alert" className="text-sm text-red-600">
-                  {save.error.message}
+                  {saveError.message}
                 </p>
               )}
-              {saved && !save.error && <p className="text-sm text-green-700">บันทึกแล้ว</p>}
+              {saved && !saveError && <p className="text-sm text-green-700">บันทึกแล้ว</p>}
             </div>
           )}
           {reward && canManage && NEXT_STATUS[reward.status] && (
             <div className="space-y-2 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
-              <p className="text-xs text-neutral-500">
+              <div className="flex items-center gap-2 text-xs text-neutral-500">
                 สถานะ <Badge variant={STATUS_VARIANT[reward.status]}>{REWARD_STATUS_LABEL[reward.status]}</Badge>
-              </p>
+              </div>
               <div className="flex flex-wrap gap-2">
                 {NEXT_STATUS[reward.status]!.map((n) => (
                   <Button

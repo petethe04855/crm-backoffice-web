@@ -38,6 +38,7 @@ import {
   useUpdatePromotion,
 } from "../hooks/usePromotions";
 import { PromotionCardPreview } from "./PromotionCardPreview";
+import { LineVisibilityPanel } from "@/features/line-oa/components/LineVisibilityBadge";
 
 function FieldError({ message }: { message?: string }) {
   if (!message) return null;
@@ -441,7 +442,7 @@ export function PromotionForm({
               {promotion?.status !== "published" && (
                 <Button type="button" variant="outline" onClick={handlePublish} disabled={busy}>
                   <Send className="mr-1 h-4 w-4" aria-hidden="true" />
-                  บันทึกและเผยแพร่
+                  บันทึกและแสดงใน LINE OA
                 </Button>
               )}
               {canArchive && (
@@ -481,7 +482,8 @@ export function PromotionForm({
           )}
         </div>
 
-        <aside className="lg:sticky lg:top-6">
+        <aside className="space-y-4 lg:sticky lg:top-6">
+          <LineVisibilityPanel value={promotion?.lineVisibility} />
           <PromotionCardPreview values={values} />
         </aside>
       </div>

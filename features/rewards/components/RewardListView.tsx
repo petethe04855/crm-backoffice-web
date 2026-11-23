@@ -15,9 +15,13 @@ import { Modal } from "@/components/ui/modal";
 import { Select } from "@/components/ui/select";
 import { PERMISSIONS } from "@/features/auth/types/auth";
 import { hasPermission, useAuthStore } from "@/stores/authStore";
-import { useCreateCategory, useDeleteCategory, useRewardCategories, useRewardList } from "../hooks/useRewards";
+import { useCreateCategory, useDeleteCategory, useDeleteReward, useRewardCategories, useRewardList, useSetRewardStatus } from "../hooks/useRewards";
+import { RowActions } from "@/components/common/RowActions";
+import { showDisabledReason } from "@/features/line-oa/types/lineVisibility";
 import { describeStock } from "../schemas/rewardForm";
 import { EMPTY_REWARD_FILTERS, REWARD_STATUS_LABEL, STATUS_VARIANT, type Reward, type RewardFilters } from "../types/reward";
+import { mediaUrl } from "@/lib/media";
+import { LineVisibilityBadge } from "@/features/line-oa/components/LineVisibilityBadge";
 
 type Draft = Pick<RewardFilters, "search" | "categoryId" | "status" | "lowStock">;
 const toDraft = (f: RewardFilters): Draft => ({ search: f.search, categoryId: f.categoryId, status: f.status, lowStock: f.lowStock });
@@ -127,7 +131,7 @@ const columns: Column<Reward>[] = [
     render: (r) =>
       r.imageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element -- uploaded files live on the API host
-        <img src={r.imageUrl} alt="" className="h-10 w-10 rounded border border-neutral-200 object-cover" />
+        <img src={mediaUrl(r.imageUrl)} alt="" className="h-10 w-10 rounded border border-neutral-200 object-cover" />
       ) : (
         <div className="flex h-10 w-10 items-center justify-center rounded border border-dashed border-neutral-300 text-neutral-400">
           <ImagePlus className="h-4 w-4" aria-hidden="true" />
@@ -137,11 +141,7 @@ const columns: Column<Reward>[] = [
   {
     key: "name",
     label: "ชื่อ",
-    render: (r) => (
-      <Link href={`/rewards/${r.id}`} className="font-medium text-neutral-900 hover:underline">
-        {r.name}
-      </Link>
-    ),
+    render: (r) => <span className="font-medium text-neutral-900">{r.name}</span>,
   },
   { key: "skuCode", label: "SKU" },
   { key: "pointsCost", label: "แต้มที่ใช้แลก", render: (r) => r.pointsCost.toLocaleString("th-TH") },
@@ -158,7 +158,33 @@ const columns: Column<Reward>[] = [
   { key: "remainingQuota", label: "แลกได้อีก", render: (r) => r.remainingQuota.toLocaleString("th-TH") },
   { key: "redeemedCount", label: "แลกไปแล้ว", render: (r) => r.redeemedCount.toLocaleString("th-TH") },
   { key: "status", label: "สถานะ", render: (r) => <Badge variant={STATUS_VARIANT[r.status]}>{REWARD_STATUS_LABEL[r.status]}</Badge> },
+  { key: "lineVisibility", label: "LINE OA", render: (r) => <LineVisibilityBadge value={r.lineVisibility} /> },
 ];
+
+
+/** แสดงใน LINE OA (switch on) / แก้ไข / ลบ (never redeemed). */
+function RewardRowActions({ r, canManage }: { r: Reward; canManage: boolean }) {
+  const status = useSetRewardStatus();
+  const remove = useDeleteReward();
+  if (!canManage) return <RowActions editHref={`/rewards/${r.id}`} confirmDelete="" />;
+  const switchable = r.status === "draft" || r.status === "inactive";
+  return (
+    <RowActions
+      editHref={`/rewards/${r.id}`}
+      show={{
+        label: "แสดงใน LINE OA",
+        run: () => status.mutateAsync({ id: r.id, status: "active" }),
+        disabledReason: switchable ? undefined : showDisabledReason(r.lineVisibility) ?? "เปิดให้แลกอยู่แล้ว",
+      }}
+      remove={{
+        label: "ลบ",
+        run: () => remove.mutateAsync(r.id),
+        disabledReason: r.redeemedCount === 0 ? undefined : "มีการแลกไปแล้ว ลบไม่ได้ — ใช้ \"เก็บถาวร\" ในหน้าแก้ไข",
+      }}
+      confirmDelete={`ลบของรางวัล "${r.name}"? การลบย้อนกลับไม่ได้`}
+    />
+  );
+}
 
 /** /rewards — SearchPanel + table. */
 export function RewardListView() {
@@ -209,6 +235,7 @@ export function RewardListView() {
             onRetry={() => list.refetch()}
             onPageChange={(page) => setFilters((f) => ({ ...f, page }))}
             onLimitChange={(limit) => setFilters((f) => ({ ...f, limit, page: 1 }))}
+            actions={(r) => <RewardRowActions r={r} canManage={canManage} />}
           />
         }
       />

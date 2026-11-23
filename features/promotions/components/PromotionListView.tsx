@@ -47,6 +47,7 @@ export function PromotionListView() {
         }
         content={
           <PromotionTable
+            canManage={canManage}
             data={list.data}
             isLoading={list.isLoading}
             isError={list.isError}

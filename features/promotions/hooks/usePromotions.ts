@@ -48,6 +48,12 @@ export function useUpdatePromotion() {
   );
 }
 
+export function useSetPromotionPriority() {
+  return usePromotionWrite(({ id, priority }: { id: string; priority: number }) =>
+    promotionsApi.setPriority(id, priority),
+  );
+}
+
 export function useDeletePromotion() {
   return usePromotionWrite((id: string) => promotionsApi.remove(id));
 }

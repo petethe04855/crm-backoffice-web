@@ -5,8 +5,9 @@ import { DataTable, type Column } from "@/components/common/DataTable";
 import { RowActions } from "@/components/common/RowActions";
 import { formatThaiDateTime } from "@/lib/utils";
 import type { ApiListResponse } from "@/types/api";
-import { PLACEMENT_LABEL, type Promotion } from "../types/promotion";
+import type { Promotion } from "../types/promotion";
 import { PromotionPublicSwitch } from "./PromotionPublicSwitch";
+import { PromotionPriorityInput } from "./PromotionPriorityInput";
 import { mediaUrl } from "@/lib/media";
 import { LineVisibilityBadge } from "@/features/line-oa/components/LineVisibilityBadge";
 import { useDeletePromotion } from "../hooks/usePromotions";
@@ -37,7 +38,7 @@ function Thumbnail({ src, alt }: { src: string; alt: string }) {
   );
 }
 
-function makeColumns(canManage: boolean): Column<Promotion>[] {
+function makeColumns(canManage: boolean, rows: Promotion[]): Column<Promotion>[] {
   return [
     {
       key: "imageUrl",
@@ -52,11 +53,6 @@ function makeColumns(canManage: boolean): Column<Promotion>[] {
       ),
     },
     {
-      key: "placement",
-      label: "ตำแหน่ง",
-      render: (p) => PLACEMENT_LABEL[p.placement],
-    },
-    {
       key: "displayStartAt",
       label: "ช่วงที่แสดง",
       render: (p) => formatWindow(p),
@@ -69,11 +65,17 @@ function makeColumns(canManage: boolean): Column<Promotion>[] {
       ),
     },
     {
+      key: "priority",
+      label: "ลำดับใน LINE",
+      render: (p) => (
+        <PromotionPriorityInput promotion={p} canManage={canManage} others={rows} />
+      ),
+    },
+    {
       key: "lineVisibility",
       label: "LINE OA",
       render: (p) => <LineVisibilityBadge value={p.lineVisibility} />,
     },
-    { key: "priority", label: "ลำดับ", render: (p) => String(p.priority) },
   ];
 }
 
@@ -124,7 +126,7 @@ export function PromotionTable({
   return (
     <DataTable
       rows={data?.data ?? []}
-      columns={makeColumns(canManage)}
+      columns={makeColumns(canManage, data?.data ?? [])}
       meta={data?.meta ?? { page: 1, limit: 20, total: 0 }}
       isLoading={isLoading}
       isError={isError}

@@ -13,7 +13,6 @@ import { usePromotionList } from "../hooks/usePromotions";
 import { daysInMonth, layoutMonth, monthKey, monthLabel, parseMonth, shiftMonth } from "../lib/calendar";
 import {
   EMPTY_PROMOTION_FILTERS,
-  PLACEMENT_LABEL,
   type PromotionDisplayStatus,
 } from "../types/promotion";
 import { PromotionStatusBadge } from "./PromotionStatusBadge";
@@ -143,9 +142,6 @@ export function PromotionCalendar() {
                       </Link>
                       <div className="mt-1 flex flex-wrap items-center gap-1">
                         <PromotionStatusBadge status={promotion.displayStatus} />
-                        <span className="text-[11px] text-neutral-500">
-                          {PLACEMENT_LABEL[promotion.placement]}
-                        </span>
                       </div>
                     </div>
 

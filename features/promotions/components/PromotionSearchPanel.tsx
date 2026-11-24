@@ -10,19 +10,17 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import {
   EMPTY_PROMOTION_FILTERS,
-  PLACEMENTS,
-  PLACEMENT_LABEL,
   type PromotionFilters,
 } from "../types/promotion";
 
-type Draft = Pick<PromotionFilters, "search" | "month" | "status" | "placement">;
+type Draft = Pick<PromotionFilters, "search" | "month" | "status">;
 
 function toDraft(f: PromotionFilters): Draft {
-  return { search: f.search, month: f.month, status: f.status, placement: f.placement };
+  return { search: f.search, month: f.month, status: f.status };
 }
 
 export function countActiveFilters(f: Draft): number {
-  return [f.search.trim(), f.month, f.status, f.placement].filter(Boolean).length;
+  return [f.search.trim(), f.month, f.status].filter(Boolean).length;
 }
 
 /** Column 1 of the promotion page: filters apply on submit, not per keystroke. */
@@ -81,21 +79,6 @@ export function PromotionSearchPanel({
             {Object.entries(PUBLIC_STATUS_LABEL).map(([value, label]) => (
               <option key={value} value={value}>
                 {label}
-              </option>
-            ))}
-          </Select>
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="p-placement">ตำแหน่งที่แสดง</Label>
-          <Select
-            id="p-placement"
-            value={draft.placement}
-            onChange={(e) => set("placement", e.target.value as Draft["placement"])}
-          >
-            <option value="">ทุกตำแหน่ง</option>
-            {PLACEMENTS.map((value) => (
-              <option key={value} value={value}>
-                {PLACEMENT_LABEL[value]}
               </option>
             ))}
           </Select>

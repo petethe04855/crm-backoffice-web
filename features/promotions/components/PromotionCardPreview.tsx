@@ -1,7 +1,7 @@
 "use client";
 
 import { ImagePlus } from "lucide-react";
-import { CTA_TYPE_LABEL, PLACEMENT_LABEL, type PromotionCTAType, type PromotionPlacement } from "../types/promotion";
+import { CTA_TYPE_LABEL, type PromotionCTAType, type PromotionPlacement } from "../types/promotion";
 import { mediaUrl } from "@/lib/media";
 
 const CTA_BUTTON_LABEL: Record<PromotionCTAType, string> = {
@@ -32,7 +32,6 @@ export function PromotionCardPreview({ values }: { values: PromotionCardPreviewI
     <div className="space-y-2">
       <div className="flex items-baseline justify-between gap-2">
         <h3 className="text-sm font-semibold">ตัวอย่างการ์ดใน LINE</h3>
-        <span className="text-xs text-muted-foreground">{PLACEMENT_LABEL[values.placement]}</span>
       </div>
 
       <div className="w-[375px] max-w-full overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">

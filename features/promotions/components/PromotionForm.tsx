@@ -25,8 +25,6 @@ import {
 import {
   CTA_TYPES,
   CTA_TYPE_LABEL,
-  PLACEMENTS,
-  PLACEMENT_LABEL,
   type Promotion,
 } from "../types/promotion";
 import {
@@ -350,7 +348,7 @@ export function PromotionForm({
           </section>
 
           <section className="space-y-4 rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
-            <h2 className="text-sm font-semibold">ช่วงเวลาและตำแหน่งที่แสดง</h2>
+            <h2 className="text-sm font-semibold">ช่วงเวลาที่แสดง</h2>
 
             <DateRangeField
               label="ช่วงวัน-เวลาแสดงผล"
@@ -369,41 +367,6 @@ export function PromotionForm({
               ไม่ต้องกลับมากดเผยแพร่ซ้ำ
             </p>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label htmlFor="pf-placement">ตำแหน่ง</Label>
-                <Select
-                  id="pf-placement"
-                  value={values.placement}
-                  disabled={readOnly}
-                  onChange={(e) =>
-                    set(
-                      "placement",
-                      e.target.value as PromotionFormValues["placement"],
-                    )
-                  }
-                >
-                  {PLACEMENTS.map((p) => (
-                    <option key={p} value={p}>
-                      {PLACEMENT_LABEL[p]}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="pf-priority">ลำดับการแสดง (มากก่อน)</Label>
-                <Input
-                  id="pf-priority"
-                  type="number"
-                  min={0}
-                  max={9999}
-                  value={values.priority}
-                  disabled={readOnly}
-                  onChange={(e) => set("priority", e.target.value)}
-                />
-                <FieldError message={errors.priority} />
-              </div>
-            </div>
           </section>
 
           <section className="space-y-4 rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">

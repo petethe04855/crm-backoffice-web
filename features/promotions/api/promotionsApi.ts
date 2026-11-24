@@ -36,6 +36,12 @@ export const promotionsApi = {
     return data.data;
   },
 
+  /** Changes only the display order (higher shows first). */
+  async setPriority(id: string, priority: number): Promise<Promotion> {
+    const { data } = await crmClient.patch<ApiResponse<Promotion>>(`/promotions/${id}/priority`, { priority });
+    return data.data;
+  },
+
   async remove(id: string): Promise<void> {
     await crmClient.delete(`/promotions/${id}`);
   },

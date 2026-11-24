@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Toaster } from "@/components/common/Toaster";
 import { NAV_ITEMS, activeNavHref } from "@/components/layout/nav";
 import { cn } from "@/lib/utils";
 import { hasPermission, useAuthStore } from "@/stores/authStore";
@@ -70,6 +71,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
           </Button>
         </header>
         <main className="flex-1 min-h-0 overflow-y-auto p-6">{children}</main>
+        <Toaster />
       </div>
     </div>
   );

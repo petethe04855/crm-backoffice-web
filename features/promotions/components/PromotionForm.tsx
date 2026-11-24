@@ -526,7 +526,7 @@ export function PromotionForm({
             </div>
           </section>
 
-          {archived && canManage && (
+          {/* {archived && canManage && (
             <section className="flex flex-wrap gap-2 rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
               <Button
                 type="button"
@@ -538,7 +538,7 @@ export function PromotionForm({
                 ทำสำเนาเป็นร่างใหม่
               </Button>
             </section>
-          )}
+          )} */}
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-6">

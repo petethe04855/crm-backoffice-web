@@ -1,6 +1,6 @@
 "use client";
 
-import { SearchPanel } from "@/components/common/SearchPanel";
+import { SEARCH_FORM_FULL_ROW, SEARCH_FORM_GRID, SearchPanel } from "@/components/common/SearchPanel";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
@@ -51,16 +51,22 @@ export function FilterBar({
   onRegion?: (value: string) => void;
   onReset: () => void;
 }) {
-  const activePreset = matchPreset({ from: filters.dateFrom, to: filters.dateTo });
+  const activePreset = matchPreset({
+    from: filters.dateFrom,
+    to: filters.dateTo,
+  });
   const valid = isRangeValid(draft.from, draft.to);
   const days = daysInclusive(filters.dateFrom, filters.dateTo);
-  const activeCount = [filters.dateFrom, filters.dateTo, filters.channel, filters.region].filter(
-    Boolean,
-  ).length;
+  const activeCount = [
+    filters.dateFrom,
+    filters.dateTo,
+    filters.channel,
+    filters.region,
+  ].filter(Boolean).length;
 
   return (
     <SearchPanel onReset={onReset} activeFilterCount={activeCount}>
-      <div className="space-y-4">
+      <div className={SEARCH_FORM_GRID}>
         <div className="space-y-1.5">
           <Label htmlFor="sd-range">ช่วงวันที่</Label>
           <ThaiDateRangeInput
@@ -132,26 +138,36 @@ export function FilterBar({
           </div>
         )}
 
-        <Button type="button" className="w-full" onClick={onApply} disabled={!valid || fetching}>
-          ใช้ช่วงนี้
-        </Button>
         {!valid && (
-          <p role="alert" className="text-xs text-red-600">
+          <p role="alert" className={`${SEARCH_FORM_FULL_ROW} text-xs text-red-600`}>
             ช่วงวันที่ต้องเรียงถูกและไม่เกิน 366 วัน
           </p>
         )}
 
-        <div className="space-y-1 border-t border-neutral-100 pt-3 text-xs text-neutral-500">
-          <p>
-            {days} วัน · {formatThaiDate(filters.dateFrom)} → {formatThaiDate(filters.dateTo)}
-          </p>
-          {summary && (
+        <div className={`${SEARCH_FORM_FULL_ROW} flex flex-col gap-3 border-t border-neutral-100 pt-3 sm:flex-row sm:items-center sm:justify-between`}>
+          <div className="space-y-1 text-xs text-neutral-500">
             <p>
-              ยอดรวม{" "}
-              <span className="font-medium text-neutral-900">{formatBaht(summary.sales)}</span>
+              {days} วัน · {formatThaiDate(filters.dateFrom)} →{" "}
+              {formatThaiDate(filters.dateTo)}
             </p>
-          )}
-          {fetching && <p>กำลังอัปเดต…</p>}
+            {summary && (
+              <p>
+                ยอดรวม{" "}
+                <span className="font-medium text-neutral-900">
+                  {formatBaht(summary.sales)}
+                </span>
+              </p>
+            )}
+            {fetching && <p>กำลังอัปเดต…</p>}
+          </div>
+          <Button
+            type="button"
+            className="w-full sm:w-auto sm:min-w-32"
+            onClick={onApply}
+            disabled={!valid || fetching}
+          >
+            ใช้ช่วงนี้
+          </Button>
         </div>
       </div>
     </SearchPanel>

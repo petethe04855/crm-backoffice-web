@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { ThaiDateInput } from "@/components/form/ThaiDateInput";
 import { PUBLIC_STATUS_LABEL } from "@/lib/publicStatus";
-import { SearchPanel } from "@/components/common/SearchPanel";
+import { SEARCH_FORM_GRID, SEARCH_FORM_SUBMIT, SearchPanel } from "@/components/common/SearchPanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,7 +49,7 @@ export function PromotionSearchPanel({
 
   return (
     <SearchPanel onReset={reset} activeFilterCount={countActiveFilters(toDraft(filters))}>
-      <form onSubmit={submit} className="space-y-4">
+      <form onSubmit={submit} className={SEARCH_FORM_GRID}>
         <div className="space-y-1.5">
           <Label htmlFor="p-search">ชื่อโปรโมชั่น</Label>
           <Input
@@ -60,14 +60,15 @@ export function PromotionSearchPanel({
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="p-month">เดือนที่แสดงผล</Label>
+          <Label htmlFor="p-month" title="แสดงโปรที่ช่วงวันคาบเกี่ยวเดือนนี้">
+            เดือนที่แสดงผล
+          </Label>
           <ThaiDateInput
             id="p-month"
             kind="month"
             value={draft.month}
             onChange={(v) => set("month", v)}
           />
-          <p className="text-xs text-muted-foreground">แสดงโปรที่ช่วงวันคาบเกี่ยวเดือนนี้</p>
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="p-status">สถานะ</Label>
@@ -99,7 +100,7 @@ export function PromotionSearchPanel({
             ))}
           </Select>
         </div>
-        <Button type="submit" className="w-full">
+        <Button type="submit" className={SEARCH_FORM_SUBMIT}>
           ค้นหา
         </Button>
       </form>

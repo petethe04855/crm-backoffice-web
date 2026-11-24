@@ -41,6 +41,7 @@ export function MemberListView() {
         }
       />
       <TwoColumnLayout
+        filtersOnTop
         sidebar={
           <MemberSearchPanel
             filters={filters}

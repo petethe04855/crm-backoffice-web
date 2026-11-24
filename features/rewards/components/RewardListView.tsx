@@ -4,7 +4,7 @@ import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { AlertTriangle, ImagePlus, Plus, Tags, Truck, X } from "lucide-react";
 import { DataTable, type Column } from "@/components/common/DataTable";
-import { SearchPanel } from "@/components/common/SearchPanel";
+import { SEARCH_FORM_GRID, SEARCH_FORM_SUBMIT, SearchPanel } from "@/components/common/SearchPanel";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { TwoColumnLayout } from "@/components/layout/TwoColumnLayout";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -45,7 +45,7 @@ function RewardSearchPanel({ filters, onApply }: { filters: RewardFilters; onApp
   };
   return (
     <SearchPanel onReset={reset} activeFilterCount={countRewardFilters(toDraft(filters))}>
-      <form onSubmit={submit} className="space-y-4">
+      <form onSubmit={submit} className={SEARCH_FORM_GRID}>
         <div className="space-y-1.5">
           <Label htmlFor="r-search">ชื่อ / รหัส SKU</Label>
           <Input id="r-search" value={draft.search} onChange={(e) => set("search", e.target.value)} />
@@ -72,11 +72,11 @@ function RewardSearchPanel({ filters, onApply }: { filters: RewardFilters; onApp
             ))}
           </Select>
         </div>
-        <label className="flex items-center gap-2 text-sm">
+        <label className="flex h-9 items-center gap-2 self-end text-sm">
           <input type="checkbox" checked={draft.lowStock} onChange={(e) => set("lowStock", e.target.checked)} />
           สต็อกใกล้หมด (≤ 10)
         </label>
-        <Button type="submit" className="w-full">
+        <Button type="submit" className={SEARCH_FORM_SUBMIT}>
           ค้นหา
         </Button>
       </form>
@@ -223,6 +223,7 @@ export function RewardListView() {
         }
       />
       <TwoColumnLayout
+        filtersOnTop
         sidebar={<RewardSearchPanel filters={filters} onApply={(d) => setFilters((f) => ({ ...f, ...d, page: 1 }))} />}
         content={
           <DataTable

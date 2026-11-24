@@ -39,6 +39,7 @@ export function PromotionListView() {
         }
       />
       <TwoColumnLayout
+        filtersOnTop
         sidebar={
           <PromotionSearchPanel
             filters={filters}

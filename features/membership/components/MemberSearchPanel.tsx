@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { SearchPanel } from "@/components/common/SearchPanel";
+import { SEARCH_FORM_FULL_ROW, SEARCH_FORM_GRID, SEARCH_FORM_SUBMIT, SearchPanel } from "@/components/common/SearchPanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -84,7 +84,7 @@ export function MemberSearchPanel({
 
   return (
     <SearchPanel onReset={reset} activeFilterCount={countActiveFilters(toDraft(filters))}>
-      <form onSubmit={submit} className="space-y-4">
+      <form onSubmit={submit} className={SEARCH_FORM_GRID}>
         <div className="space-y-1.5">
           <Label htmlFor="m-search">ค้นหา</Label>
           <Input
@@ -131,7 +131,7 @@ export function MemberSearchPanel({
           />
         </div>
         {dateError && (
-          <p role="alert" className="text-xs text-red-600">
+          <p role="alert" className={`${SEARCH_FORM_FULL_ROW} text-xs text-red-600`}>
             {dateError}
           </p>
         )}
@@ -168,11 +168,11 @@ export function MemberSearchPanel({
           />
         </div>
         {manageError && (
-          <p role="alert" className="text-xs text-red-600">
+          <p role="alert" className={`${SEARCH_FORM_FULL_ROW} text-xs text-red-600`}>
             {manageError}
           </p>
         )}
-        <Button type="submit" className="w-full" disabled={Boolean(dateError || manageError)}>
+        <Button type="submit" className={SEARCH_FORM_SUBMIT} disabled={Boolean(dateError || manageError)}>
           ค้นหา
         </Button>
       </form>

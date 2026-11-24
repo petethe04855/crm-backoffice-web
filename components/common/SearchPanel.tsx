@@ -4,6 +4,13 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Filter, RotateCcw } from "lucide-react";
 
+/** Search form shown above a table: fields and the submit button share one line, wrapping when it is too narrow. */
+export const SEARCH_FORM_GRID = "flex flex-wrap items-end gap-3 [&>*]:min-w-44 [&>*]:flex-1";
+/** Submit button of a SEARCH_FORM_GRID form: sized to its label, at the end of the line. */
+export const SEARCH_FORM_SUBMIT = "!flex-none w-full sm:w-auto sm:min-w-28";
+/** A SEARCH_FORM_GRID child that takes its own line below the fields (errors, summaries). */
+export const SEARCH_FORM_FULL_ROW = "order-last !basis-full";
+
 export interface SearchPanelProps {
   title?: string;
   onReset?: () => void;
@@ -20,7 +27,7 @@ export function SearchPanel({
   className = "",
 }: SearchPanelProps) {
   return (
-    <aside
+    <section
       className={`space-y-4 rounded-xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900 ${className}`}
     >
       <div className="flex items-center justify-between border-b border-neutral-100 pb-3 dark:border-neutral-800">
@@ -51,6 +58,6 @@ export function SearchPanel({
       </div>
 
       <div className="space-y-4">{children}</div>
-    </aside>
+    </section>
   );
 }

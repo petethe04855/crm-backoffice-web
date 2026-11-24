@@ -4,7 +4,7 @@ import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { Plus, ScanLine } from "lucide-react";
 import { DataTable, type Column } from "@/components/common/DataTable";
-import { SearchPanel } from "@/components/common/SearchPanel";
+import { SEARCH_FORM_GRID, SEARCH_FORM_SUBMIT, SearchPanel } from "@/components/common/SearchPanel";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { TwoColumnLayout } from "@/components/layout/TwoColumnLayout";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -49,7 +49,7 @@ function CouponSearchPanel({ filters, onApply }: { filters: CouponFilters; onApp
   };
   return (
     <SearchPanel onReset={reset} activeFilterCount={countCouponFilters(toDraft(filters))}>
-      <form onSubmit={submit} className="space-y-4">
+      <form onSubmit={submit} className={SEARCH_FORM_GRID}>
         <div className="space-y-1.5">
           <Label htmlFor="c-search">ชื่อคูปอง</Label>
           <Input id="c-search" value={draft.search} onChange={(e) => set("search", e.target.value)} placeholder="ค้นหาจากชื่อ" />
@@ -80,7 +80,7 @@ function CouponSearchPanel({ filters, onApply }: { filters: CouponFilters; onApp
             ))}
           </Select>
         </div>
-        <Button type="submit" className="w-full">
+        <Button type="submit" className={SEARCH_FORM_SUBMIT}>
           ค้นหา
         </Button>
       </form>
@@ -162,6 +162,7 @@ export function CouponListView() {
         }
       />
       <TwoColumnLayout
+        filtersOnTop
         sidebar={<CouponSearchPanel filters={filters} onApply={(d) => setFilters((f) => ({ ...f, ...d, page: 1 }))} />}
         content={
           <DataTable

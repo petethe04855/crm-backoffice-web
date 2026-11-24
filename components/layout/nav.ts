@@ -28,20 +28,21 @@ export interface NavItem {
  * AdminShell; the shell only filters and renders the list.
  */
 export const NAV_ITEMS: NavItem[] = [
-  { href: "/members", label: "สมาชิก", icon: Users, permission: PERMISSIONS.membersView },
-  { href: "/members/data-requests", label: "คำขอลบบัญชี", icon: UserX, permission: PERMISSIONS.membersManage },
-  { href: "/promotions", label: "โปรโมชั่น", icon: Megaphone, permission: PERMISSIONS.promotionsView },
-  { href: "/rewards", label: "ของรางวัล", icon: Gift, permission: PERMISSIONS.rewardsView },
-  { href: "/redemptions", label: "การแลกรางวัล", icon: Truck, permission: PERMISSIONS.redemptionsFulfill },
-  { href: "/coupons", label: "คูปอง", icon: Ticket, permission: PERMISSIONS.couponsView },
-  { href: "/coupons/redeem", label: "กดใช้คูปอง", icon: ScanLine, permission: PERMISSIONS.couponsUse },
-  { href: "/product-codes", label: "รหัสสินค้า", icon: KeyRound, permission: PERMISSIONS.productCodesManage },
   {
     href: "/sales-dashboard",
     label: "ยอดขาย",
     icon: BarChart3,
     permission: PERMISSIONS.salesDashboardView,
   },
+  { href: "/members", label: "สมาชิก", icon: Users, permission: PERMISSIONS.membersView },
+  // { href: "/members/data-requests", label: "คำขอลบบัญชี", icon: UserX, permission: PERMISSIONS.membersManage },
+  { href: "/promotions", label: "โปรโมชั่น", icon: Megaphone, permission: PERMISSIONS.promotionsView },
+  { href: "/rewards", label: "ของรางวัล", icon: Gift, permission: PERMISSIONS.rewardsView },
+  { href: "/redemptions", label: "การแลกรางวัล", icon: Truck, permission: PERMISSIONS.redemptionsFulfill },
+  // { href: "/coupons", label: "คูปอง", icon: Ticket, permission: PERMISSIONS.couponsView },
+  // { href: "/coupons/redeem", label: "กดใช้คูปอง", icon: ScanLine, permission: PERMISSIONS.couponsUse },
+  { href: "/product-codes", label: "รหัสสินค้า", icon: KeyRound, permission: PERMISSIONS.productCodesManage },
+  
   {
     href: "/settings/points",
     label: "ตั้งค่าแต้ม",

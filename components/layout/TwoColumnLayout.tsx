@@ -5,6 +5,8 @@ interface TwoColumnLayoutProps {
   sidebar: React.ReactNode;
   content: React.ReactNode;
   sidebarWidth?: string;
+  /** Put the panel above the content (full width) instead of beside it — used for search/filter panels. */
+  filtersOnTop?: boolean;
   className?: string;
 }
 
@@ -12,8 +14,18 @@ export const TwoColumnLayout: React.FC<TwoColumnLayoutProps> = ({
   sidebar,
   content,
   sidebarWidth = "w-full lg:w-80",
+  filtersOnTop = false,
   className,
 }) => {
+  if (filtersOnTop) {
+    return (
+      <div className={cn("mt-6 flex flex-col gap-6", className)}>
+        <section className="w-full">{sidebar}</section>
+        <div className="w-full min-w-0">{content}</div>
+      </div>
+    );
+  }
+
   return (
     <div
       className={cn(

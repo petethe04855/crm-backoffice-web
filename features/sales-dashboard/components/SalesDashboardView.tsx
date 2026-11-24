@@ -62,6 +62,7 @@ export function SalesDashboardView() {
         </div>
       ) : (
         <TwoColumnLayout
+          filtersOnTop
           sidebar={
             <FilterBar
               filters={filters}

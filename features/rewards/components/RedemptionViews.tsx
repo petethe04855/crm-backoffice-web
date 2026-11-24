@@ -7,7 +7,7 @@ import { DataTable, type Column } from "@/components/common/DataTable";
 import { ErrorState } from "@/components/common/ErrorState";
 import { ExportButton } from "@/components/common/ExportButton";
 import { Loading } from "@/components/common/Loading";
-import { SearchPanel } from "@/components/common/SearchPanel";
+import { SEARCH_FORM_FULL_ROW, SEARCH_FORM_GRID, SEARCH_FORM_SUBMIT, SearchPanel } from "@/components/common/SearchPanel";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { TwoColumnLayout } from "@/components/layout/TwoColumnLayout";
 import { Button } from "@/components/ui/button";
@@ -172,7 +172,7 @@ function RedemptionSearchPanel({ filters, onApply }: { filters: RedemptionFilter
   const active = [filters.search.trim(), filters.status, filters.dateFrom, filters.dateTo].filter(Boolean).length;
   return (
     <SearchPanel onReset={reset} activeFilterCount={active}>
-      <form onSubmit={submit} className="space-y-4">
+      <form onSubmit={submit} className={SEARCH_FORM_GRID}>
         <div className="space-y-1.5">
           <Label htmlFor="rd-search">เลขที่ / สมาชิก</Label>
           <Input id="rd-search" value={draft.search} onChange={(e) => set("search", e.target.value)} />
@@ -203,11 +203,11 @@ function RedemptionSearchPanel({ filters, onApply }: { filters: RedemptionFilter
           />
         </div>
         {dateError && (
-          <p role="alert" className="text-xs text-red-600">
+          <p role="alert" className={`${SEARCH_FORM_FULL_ROW} text-xs text-red-600`}>
             {dateError}
           </p>
         )}
-        <Button type="submit" className="w-full" disabled={Boolean(dateError)}>
+        <Button type="submit" className={SEARCH_FORM_SUBMIT} disabled={Boolean(dateError)}>
           ค้นหา
         </Button>
       </form>
@@ -231,6 +231,7 @@ export function RedemptionListView() {
         actions={<ExportButton label="ส่งออก Excel" onExport={() => rewardsApi.exportRedemptions(filters)} />}
       />
       <TwoColumnLayout
+        filtersOnTop
         sidebar={<RedemptionSearchPanel filters={filters} onApply={(d) => setFilters((f) => ({ ...f, ...d, page: 1 }))} />}
         content={
           <DataTable

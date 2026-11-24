@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Copy, EyeOff, Loader2, Save, Trash2 } from "lucide-react";
+import { toast } from "@/components/common/Toaster";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { DateRangeField } from "@/components/form/DateRangeField";
 import { ImageUpload } from "@/components/form/ImageUpload";
@@ -22,16 +23,11 @@ import {
   toPromotionInput,
   type PromotionFormValues,
 } from "../schemas/promotionForm";
-import {
-  CTA_TYPES,
-  CTA_TYPE_LABEL,
-  type Promotion,
-} from "../types/promotion";
+import { CTA_TYPES, CTA_TYPE_LABEL, type Promotion } from "../types/promotion";
 import {
   useCreatePromotion,
   useDuplicatePromotion,
   useDeletePromotion,
-  usePublishPromotion,
   useUnpublishPromotion,
   useUpdatePromotion,
 } from "../hooks/usePromotions";
@@ -68,7 +64,6 @@ export function PromotionForm({
   const tiers = useTiers();
   const create = useCreatePromotion();
   const update = useUpdatePromotion();
-  const publish = usePublishPromotion();
   const unpublish = useUnpublishPromotion();
   const duplicate = useDuplicatePromotion();
   const remove = useDeletePromotion();
@@ -98,7 +93,6 @@ export function PromotionForm({
   const busy =
     create.isPending ||
     update.isPending ||
-    publish.isPending ||
     unpublish.isPending ||
     duplicate.isPending ||
     remove.isPending;
@@ -107,15 +101,15 @@ export function PromotionForm({
   const canUnpublish = promotion?.status === "published";
 
   /**
-   * Validates and writes. Saving always makes the promotion public (the LINE
-   * app shows it immediately); when the API refuses to publish, the row stays
-   * unpublic and the reason is shown.
+   * Validates and writes. Saving keeps the public/unpublic state as it is:
+   * staff turn a promotion on in LINE OA with the switch in the list table.
    */
-  async function persist(navigateOnCreate: boolean): Promise<Promotion | null> {
+  /** Validates and saves, then returns to the list; warnings follow as toasts. */
+  async function handleSave() {
     const parsed = promotionFormSchema.safeParse(values);
     if (!parsed.success) {
       setErrors(fieldErrors(parsed.error));
-      return null;
+      return;
     }
     setErrors({});
     setServerError(null);
@@ -127,33 +121,15 @@ export function PromotionForm({
         : await create.mutateAsync(input);
     } catch (err) {
       setServerError(errorMessage(err));
-      return null;
+      return;
     }
 
-    if (saved.status !== "published" && saved.status !== "archived") {
-      try {
-        saved = await publish.mutateAsync(saved.id);
-      } catch (err) {
-        setWarnings(saved.warnings);
-        setServerError(
-          `บันทึกแล้ว แต่ยังแสดงใน LINE OA ไม่ได้: ${errorMessage(err)}`,
-        );
-        if (!promotion && navigateOnCreate) {
-          router.replace(`/promotions/${saved.id}`);
-        }
-        return saved;
-      }
-    }
-
-    setWarnings(saved.warnings);
-    if (!promotion && navigateOnCreate) {
-      router.replace(`/promotions/${saved.id}`);
-    }
-    return saved;
-  }
-
-  async function handleSave() {
-    await persist(true);
+    // The form is left right away, so the toasts carry the result.
+    toast.success(
+      promotion ? `บันทึก "${saved.title}" แล้ว` : `สร้าง "${saved.title}" แล้ว (unpublic)`,
+    );
+    for (const w of saved.warnings) toast.warning(w);
+    router.push("/promotions");
   }
 
   async function handleUnpublish() {
@@ -201,7 +177,7 @@ export function PromotionForm({
         description={
           promotion
             ? "แก้ไขรายละเอียด ช่วงเวลาแสดงผล และกลุ่มเป้าหมาย"
-            : "บันทึกแล้วแสดงใน LINE OA ทันที หากข้อมูลยังไม่ครบจะบันทึกเป็น unpublic"
+            : "บันทึกเป็น unpublic ก่อน แล้วเปิดแสดงใน LINE OA ด้วยสวิตช์ในหน้ารายการ"
         }
         actions={
           <Link
@@ -259,9 +235,7 @@ export function PromotionForm({
                 ) : (
                   <Save className="mr-1 h-4 w-4" aria-hidden="true" />
                 )}
-                {promotion?.status === "published"
-                  ? "บันทึก"
-                  : "บันทึกและเผยแพร่"}
+                บันทึก
               </Button>
               {canUnpublish && (
                 <Button
@@ -274,7 +248,7 @@ export function PromotionForm({
                   ตั้งเป็น unpublic
                 </Button>
               )}
-              {promotion && (
+              {/* {promotion && (
                 <Button
                   type="button"
                   variant="outline"
@@ -284,7 +258,7 @@ export function PromotionForm({
                   <Copy className="mr-1 h-4 w-4" aria-hidden="true" />
                   ทำสำเนา
                 </Button>
-              )}
+              )} */}
               {canDelete && (
                 <Button
                   type="button"
@@ -366,7 +340,6 @@ export function PromotionForm({
               ระบบคำนวณสถานะจากเวลานี้เอง — ตั้งเวลาไว้ล่วงหน้าได้
               ไม่ต้องกลับมากดเผยแพร่ซ้ำ
             </p>
-
           </section>
 
           <section className="space-y-4 rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
@@ -419,7 +392,7 @@ export function PromotionForm({
             </div>
           </section>
 
-          <section className="space-y-4 rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
+          {/* <section className="space-y-4 rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
             <h2 className="text-sm font-semibold">กลุ่มเป้าหมาย</h2>
             <p className="text-xs text-muted-foreground">
               ไม่เลือกอะไรเลย = สมาชิกทุกคนเห็น · เลือกหลายเงื่อนไข =
@@ -487,7 +460,7 @@ export function PromotionForm({
               />
               <FieldError message={errors.newMemberDays} />
             </div>
-          </section>
+          </section> */}
 
           {/* {archived && canManage && (
             <section className="flex flex-wrap gap-2 rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">

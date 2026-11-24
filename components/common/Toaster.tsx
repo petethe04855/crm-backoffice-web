@@ -1,10 +1,10 @@
 "use client";
 
-import { CheckCircle2, X, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, X, XCircle } from "lucide-react";
 import { create } from "zustand";
 import { cn } from "@/lib/utils";
 
-type ToastKind = "success" | "error";
+type ToastKind = "success" | "warning" | "error";
 
 interface ToastItem {
   id: number;
@@ -18,7 +18,8 @@ interface ToastState {
   dismiss: (id: number) => void;
 }
 
-const TOAST_MS = 4000;
+/** Warnings and errors carry a reason to read, so they stay up longer. */
+const TOAST_MS: Record<ToastKind, number> = { success: 4000, warning: 7000, error: 7000 };
 let nextId = 1;
 
 const useToastStore = create<ToastState>((set, get) => ({
@@ -26,7 +27,7 @@ const useToastStore = create<ToastState>((set, get) => ({
   push: (kind, message) => {
     const id = nextId++;
     set({ items: [...get().items, { id, kind, message }] });
-    setTimeout(() => get().dismiss(id), TOAST_MS);
+    setTimeout(() => get().dismiss(id), TOAST_MS[kind]);
   },
   dismiss: (id) => set({ items: get().items.filter((t) => t.id !== id) }),
 }));
@@ -34,6 +35,7 @@ const useToastStore = create<ToastState>((set, get) => ({
 /** Short pop-up notices in the top-right corner; they close by themselves. */
 export const toast = {
   success: (message: string) => useToastStore.getState().push("success", message),
+  warning: (message: string) => useToastStore.getState().push("warning", message),
   error: (message: string) => useToastStore.getState().push("error", message),
 };
 
@@ -45,18 +47,23 @@ export function Toaster() {
   return (
     <div className="pointer-events-none fixed right-4 top-4 z-[60] flex w-[calc(100%-2rem)] max-w-sm flex-col gap-2">
       {items.map((t) => {
-        const Icon = t.kind === "success" ? CheckCircle2 : XCircle;
+        const Icon = t.kind === "success" ? CheckCircle2 : t.kind === "warning" ? AlertTriangle : XCircle;
+        const tone = {
+          success: { border: "border-emerald-200", icon: "text-emerald-600" },
+          warning: { border: "border-amber-200", icon: "text-amber-600" },
+          error: { border: "border-red-200", icon: "text-red-600" },
+        }[t.kind];
         return (
           <div
             key={t.id}
-            role={t.kind === "error" ? "alert" : "status"}
+            role={t.kind === "success" ? "status" : "alert"}
             className={cn(
               "pointer-events-auto flex items-start gap-2 rounded-lg border bg-white px-4 py-3 text-sm shadow-lg",
-              t.kind === "success" ? "border-emerald-200" : "border-red-200",
+              tone.border,
             )}
           >
             <Icon
-              className={cn("mt-0.5 h-4 w-4 shrink-0", t.kind === "success" ? "text-emerald-600" : "text-red-600")}
+              className={cn("mt-0.5 h-4 w-4 shrink-0", tone.icon)}
               aria-hidden="true"
             />
             <p className="flex-1 text-neutral-800">{t.message}</p>

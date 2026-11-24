@@ -35,11 +35,13 @@ export function PublicToggle({
         />
         <span
           className={cn(
-            "text-xs font-medium",
-            checked ? "text-primary" : "text-muted-foreground",
+            "inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium",
+            checked
+              ? "border-green-200 bg-green-50 text-green-800"
+              : "border-neutral-200 bg-neutral-50 text-neutral-500",
           )}
         >
-          {label}
+          {checked ? "Public" : "Unpublic"}
         </span>
       </div>
       {error && (

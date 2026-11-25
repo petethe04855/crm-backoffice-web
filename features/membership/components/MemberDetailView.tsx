@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { ErrorState } from "@/components/common/ErrorState";
 import { Loading } from "@/components/common/Loading";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -12,6 +12,7 @@ import { Modal } from "@/components/ui/modal";
 import { PERMISSIONS } from "@/features/auth/types/auth";
 import { cn, formatCurrency, formatThaiDateTime } from "@/lib/utils";
 import { hasPermission, useAuthStore } from "@/stores/authStore";
+import { maskEmail, maskPhone } from "../lib/mask";
 import { useUnlinkLine, useUpdateMemberStatus } from "../hooks/useMemberManagement";
 import { useMember } from "../hooks/useMembers";
 import { GENDER_LABEL, type MemberDetail } from "../types/member";
@@ -31,10 +32,21 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
+function Section({
+  title,
+  action,
+  children,
+}: {
+  title: string;
+  action?: ReactNode;
+  children: ReactNode;
+}) {
   return (
     <section className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
-      <h2 className="text-sm font-semibold mb-4">{title}</h2>
+      <div className="mb-4 flex items-center justify-between gap-2">
+        <h2 className="text-sm font-semibold">{title}</h2>
+        {action}
+      </div>
       <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">{children}</dl>
     </section>
   );
@@ -43,6 +55,8 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 type TabKey = "profile" | "points" | "codes" | "redemptions" | "coupons" | "notes";
 
 function ProfileTab({ m }: { m: MemberDetail }) {
+  const [showPersonalData, setShowPersonalData] = useState(false);
+
   return (
     <div className="space-y-5">
       <Section title="ข้อมูลสมาชิก">
@@ -67,13 +81,43 @@ function ProfileTab({ m }: { m: MemberDetail }) {
           ) : null}
         </Field>
       </Section>
-      <Section title="ข้อมูลติดต่อ">
+      <Section
+        title="ข้อมูลติดต่อ"
+        action={
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            onClick={() => setShowPersonalData((v) => !v)}
+          >
+            {showPersonalData ? (
+              <>
+                <EyeOff className="mr-1.5 h-3.5 w-3.5" aria-hidden />
+                ซ่อนข้อมูล
+              </>
+            ) : (
+              <>
+                <Eye className="mr-1.5 h-3.5 w-3.5" aria-hidden />
+                แสดงข้อมูล
+              </>
+            )}
+          </Button>
+        }
+      >
         <Field label="อีเมล">
-          {m.email}
+          {showPersonalData ? m.email : maskEmail(m.email)}
           {m.emailVerifiedAt && <span className="ml-2 text-xs text-green-700">ยืนยันแล้ว</span>}
         </Field>
-        <Field label="เบอร์โทร (ไม่ได้ยืนยัน)">{m.phone}</Field>
-        <Field label="วันเกิด">{m.birthDate ? formatThaiDateTime(m.birthDate, { includeTime: false }) : null}</Field>
+        <Field label="เบอร์โทร (ไม่ได้ยืนยัน)">
+          {showPersonalData ? m.phone : maskPhone(m.phone)}
+        </Field>
+        <Field label="วันเกิด">
+          {m.birthDate
+            ? showPersonalData
+              ? formatThaiDateTime(m.birthDate, { includeTime: false })
+              : "•• ••• ••••"
+            : null}
+        </Field>
         <Field label="เพศ">{GENDER_LABEL[m.gender]}</Field>
       </Section>
       <Section title="บัญชี LINE">

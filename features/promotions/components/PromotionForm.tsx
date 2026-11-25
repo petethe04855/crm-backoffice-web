@@ -14,6 +14,8 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useTiers } from "@/features/membership/hooks/useMembers";
+import { useCouponList } from "@/features/coupons/hooks/useCoupons";
+import { useRewardList } from "@/features/rewards/hooks/useRewards";
 import { cn } from "@/lib/utils";
 import {
   EMPTY_PROMOTION_FORM,
@@ -45,6 +47,69 @@ function FieldError({ message }: { message?: string }) {
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : "บันทึกไม่สำเร็จ";
+}
+
+function CtaTargetSelect({
+  kind,
+  value,
+  disabled,
+  invalid,
+  onChange,
+}: {
+  kind: "coupon" | "reward";
+  value: string;
+  disabled: boolean;
+  invalid: boolean;
+  onChange: (value: string) => void;
+}) {
+  const coupons = useCouponList({
+    search: "",
+    month: "",
+    status: "",
+    channel: "",
+    page: 1,
+    limit: 100,
+  });
+  const rewards = useRewardList({
+    search: "",
+    categoryId: "",
+    status: "",
+    lowStock: false,
+    page: 1,
+    limit: 100,
+  });
+
+  const rows = kind === "coupon" ? (coupons.data?.data ?? []) : (rewards.data?.data ?? []);
+  const loading = kind === "coupon" ? coupons.isLoading : rewards.isLoading;
+  const isValidId = /^[1-9]\d*$/.test(value);
+  const hasCurrent = isValidId && rows.some((r) => String(r.id) === value);
+  const selectValue = isValidId ? value : "";
+
+  return (
+    <Select
+      id="pf-cta-target"
+      value={selectValue}
+      disabled={disabled || loading}
+      aria-invalid={invalid || undefined}
+      onChange={(e) => onChange(e.target.value)}
+    >
+      <option value="">
+        {loading
+          ? "กำลังโหลดรายการ…"
+          : kind === "reward"
+            ? "-- เลือกของรางวัล --"
+            : "-- เลือกคูปอง --"}
+      </option>
+      {!hasCurrent && isValidId && (
+        <option value={value}>#{value}</option>
+      )}
+      {rows.map((item) => (
+        <option key={item.id} value={String(item.id)}>
+          #{item.id} — {item.name}
+        </option>
+      ))}
+    </Select>
+  );
 }
 
 /**
@@ -352,14 +417,13 @@ export function PromotionForm({
                   id="pf-cta"
                   value={values.ctaType}
                   disabled={readOnly}
-                  onChange={(e) =>
-                    set(
-                      "ctaType",
-                      e.target.value as PromotionFormValues["ctaType"],
-                    )
-                  }
+                  onChange={(e) => {
+                    const next = e.target.value as PromotionFormValues["ctaType"];
+                    set("ctaType", next);
+                    set("ctaTarget", "");
+                  }}
                 >
-                  {CTA_TYPES.map((t) => (
+                  {CTA_TYPES.filter((t) => t !== "coupon").map((t) => (
                     <option key={t} value={t}>
                       {CTA_TYPE_LABEL[t]}
                     </option>
@@ -372,20 +436,27 @@ export function PromotionForm({
                     {values.ctaType === "url"
                       ? "ลิงก์ (https://…)"
                       : values.ctaType === "reward"
-                        ? "รหัสของรางวัล"
-                        : "รหัสคูปอง"}
+                        ? "ของรางวัล (เลือกจากรายการ)"
+                        : "คูปอง (เลือกจากรายการ)"}
                   </Label>
-                  <Input
-                    id="pf-cta-target"
-                    value={values.ctaTarget}
-                    disabled={readOnly}
-                    placeholder={
-                      values.ctaType === "url"
-                        ? "https://example.com/promo"
-                        : "เช่น 123"
-                    }
-                    onChange={(e) => set("ctaTarget", e.target.value)}
-                  />
+                  {values.ctaType === "url" ? (
+                    <Input
+                      id="pf-cta-target"
+                      value={values.ctaTarget}
+                      disabled={readOnly}
+                      aria-invalid={Boolean(errors.ctaTarget) || undefined}
+                      placeholder="https://example.com/promo"
+                      onChange={(e) => set("ctaTarget", e.target.value)}
+                    />
+                  ) : (
+                    <CtaTargetSelect
+                      kind={values.ctaType}
+                      value={values.ctaTarget}
+                      disabled={readOnly}
+                      invalid={Boolean(errors.ctaTarget)}
+                      onChange={(v) => set("ctaTarget", v)}
+                    />
+                  )}
                   <FieldError message={errors.ctaTarget} />
                 </div>
               )}

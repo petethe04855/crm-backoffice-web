@@ -1,35 +1,30 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
-import { ThaiDateInput } from "@/components/form/ThaiDateInput";
+import { useState } from "react";
 import Link from "next/link";
-import { Download, Power, Search, Settings2, XCircle } from "lucide-react";
-import { ErrorState } from "@/components/common/ErrorState";
-import { Loading } from "@/components/common/Loading";
-import { Pagination } from "@/components/common/Pagination";
-import { SearchPanel } from "@/components/common/SearchPanel";
+import { Download, Eye, Pencil, Plus, Power, Search, Settings2, XCircle } from "lucide-react";
+import { DataTable, type Column } from "@/components/common/DataTable";
+import {
+  SEARCH_FORM_GRID,
+  SEARCH_FORM_SUBMIT,
+  SearchPanel,
+} from "@/components/common/SearchPanel";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { TwoColumnLayout } from "@/components/layout/TwoColumnLayout";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { PERMISSIONS } from "@/features/auth/types/auth";
-import { SKUSelect } from "@/features/rewards/components/RewardForm";
 import { formatThaiDateTime } from "@/lib/utils";
 import { hasPermission, useAuthStore } from "@/stores/authStore";
 import {
   useActivateBatch,
-  useCreateBatch,
   useExportBatch,
   useProductCodeBatches,
   useVoidBatch,
 } from "../hooks/useProductCodes";
-import {
-  EMPTY_BATCH_FORM,
-  batchFormSchema,
-  type BatchFormValues,
-} from "../schemas/batchForm";
 import {
   BATCH_STATUS_LABEL,
   BATCH_STATUS_VARIANT,
@@ -40,19 +35,83 @@ import {
 } from "../types/productCode";
 
 const num = new Intl.NumberFormat("th-TH");
+const EMPTY_FILTERS: BatchFilters = { search: "", status: "", page: 1 };
+
+const columns: Column<ProductCodeBatch>[] = [
+  {
+    key: "batchNo",
+    label: "ล็อต",
+    render: (b) => (
+      <div>
+        <Link
+          href={`/product-codes/${b.id}`}
+          className="font-mono font-medium text-neutral-900 hover:underline"
+        >
+          {b.batchNo}
+        </Link>
+        <p className="text-xs text-neutral-500">
+          {b.lotNumber ? `ล็อตสินค้า ${b.lotNumber}` : "ยังไม่ระบุล็อตสินค้า"}
+        </p>
+      </div>
+    ),
+  },
+  {
+    key: "skuName",
+    label: "สินค้า",
+    render: (b) => (
+      <div>
+        <p className="font-medium text-neutral-900">{b.skuName}</p>
+        <p className="font-mono text-xs text-neutral-500">{b.skuCode}</p>
+      </div>
+    ),
+  },
+  {
+    key: "quantity",
+    label: "จำนวน / ใช้แล้ว",
+    money: true,
+    render: (b) => (
+      <span>
+        {num.format(b.quantity)}
+        <span className="font-normal text-neutral-500">
+          {" "}
+          / {num.format(b.stats.used)}
+        </span>
+      </span>
+    ),
+  },
+  {
+    key: "pointsPerCode",
+    label: "แต้ม/รหัส",
+    money: true,
+    render: (b) => num.format(b.pointsPerCode),
+  },
+  {
+    key: "codeExpiresAt",
+    label: "หมดอายุ",
+    render: (b) =>
+      b.codeExpiresAt ? formatThaiDateTime(b.codeExpiresAt) : "ไม่หมดอายุ",
+  },
+  {
+    key: "status",
+    label: "สถานะ",
+    render: (b) => (
+      <div className="flex items-center gap-1">
+        <Badge variant={BATCH_STATUS_VARIANT[b.status]}>
+          {BATCH_STATUS_LABEL[b.status]}
+        </Badge>
+        {b.isTest && <Badge variant="outline">ทดสอบ</Badge>}
+      </div>
+    ),
+  },
+];
 
 /**
- * Packaging-code batches: create a draft, export the print file once (the full
- * codes are generated then and never stored), activate, or void.
+ * Packaging-code batches: list, search, export print file once, activate, or void.
  */
 export function ProductCodeBatchesView() {
   const session = useAuthStore((s) => s.session);
   const canExport = hasPermission(session, PERMISSIONS.productCodesExport);
-  const [filters, setFilters] = useState<BatchFilters>({
-    search: "",
-    status: "",
-    page: 1,
-  });
+  const [filters, setFilters] = useState<BatchFilters>(EMPTY_FILTERS);
   const [searchText, setSearchText] = useState("");
   const list = useProductCodeBatches(filters);
   const exportBatch = useExportBatch();
@@ -60,6 +119,15 @@ export function ProductCodeBatchesView() {
   const voidBatch = useVoidBatch();
   const [format, setFormat] = useState<ExportFormat>("xlsx");
   const actionError = exportBatch.error ?? activate.error ?? voidBatch.error;
+
+  const activeFilterCount = [filters.search.trim(), filters.status].filter(
+    Boolean,
+  ).length;
+
+  const resetFilters = () => {
+    setSearchText("");
+    setFilters(EMPTY_FILTERS);
+  };
 
   const onExport = (b: ProductCodeBatch) => {
     const ok = window.confirm(
@@ -76,385 +144,198 @@ export function ProductCodeBatchesView() {
       voidBatch.mutate({ id: b.id, reason: reason.trim() });
   };
 
-  const totalPages = list.data
-    ? Math.max(1, Math.ceil(list.data.meta.total / list.data.meta.limit))
-    : 1;
-
   return (
     <>
       <PageHeader
         title="รหัสสินค้า"
         description="สร้างล็อตรหัสสำหรับพิมพ์บนบรรจุภัณฑ์ สมาชิกกรอกรหัสใน LINE เพื่อรับแต้ม — ไฟล์รหัสส่งออกได้ครั้งเดียว"
+        actions={
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            <Link
+              href="/product-codes/settings"
+              className={buttonVariants({ variant: "outline" })}
+            >
+              <Settings2 className="mr-1.5 h-4 w-4" aria-hidden />
+              ตั้งค่าการกรอกรหัส / ผู้ทดสอบ
+            </Link>
+            <Link href="/product-codes/new" className={buttonVariants()}>
+              <Plus className="mr-1.5 h-4 w-4" aria-hidden />
+              สร้างล็อตรหัสใหม่
+            </Link>
+          </div>
+        }
       />
-      <div className="mb-4 flex justify-end">
-        <Link
-          href="/product-codes/settings"
-          className="inline-flex items-center gap-1 text-sm text-neutral-600 hover:underline"
-        >
-          <Settings2 className="h-4 w-4" aria-hidden />
-          ตั้งค่าการกรอกรหัส / ผู้ทดสอบ
-        </Link>
-      </div>
-      <div className="mt-6 space-y-6">
-        <CreateBatchForm />
-        <SearchPanel title="ค้นหา">
-          <form
-            className="flex flex-col gap-3 sm:flex-row"
-            onSubmit={(e) => {
-              e.preventDefault();
-              setFilters((f) => ({ ...f, search: searchText, page: 1 }));
-            }}
+
+      <TwoColumnLayout
+        filtersOnTop
+        sidebar={
+          <SearchPanel
+            title="ค้นหาล็อตรหัส"
+            onReset={resetFilters}
+            activeFilterCount={activeFilterCount}
           >
-            <div className="relative flex-1">
-              <Search
-                className="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 text-neutral-400"
-                aria-hidden
-              />
-              <Input
-                aria-label="ค้นหาล็อต"
-                className="pl-8"
-                placeholder="เลขล็อต, รหัสหรือชื่อสินค้า"
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-              />
-            </div>
-            <Select
-              aria-label="สถานะ"
-              className="sm:w-48"
-              value={filters.status}
-              onChange={(e) =>
-                setFilters((f) => ({
-                  ...f,
-                  status: e.target.value as BatchStatus | "",
-                  page: 1,
-                }))
-              }
+            <form
+              className={SEARCH_FORM_GRID}
+              onSubmit={(e) => {
+                e.preventDefault();
+                setFilters((f) => ({ ...f, search: searchText, page: 1 }));
+              }}
             >
-              <option value="">ทุกสถานะ</option>
-              {(Object.keys(BATCH_STATUS_LABEL) as BatchStatus[]).map((s) => (
-                <option key={s} value={s}>
-                  {BATCH_STATUS_LABEL[s]}
-                </option>
-              ))}
-            </Select>
-            <Button type="submit" variant="outline" className="sm:min-w-32">
-              ค้นหา
-            </Button>
-          </form>
-        </SearchPanel>
-        <div className="space-y-3">
-          {canExport && (
-            <div className="flex items-center justify-end gap-2 text-sm">
-              <Label htmlFor="pc-format">ไฟล์ส่งออก</Label>
-              <Select
-                id="pc-format"
-                className="w-28"
-                value={format}
-                onChange={(e) => setFormat(e.target.value as ExportFormat)}
-              >
-                <option value="xlsx">XLSX</option>
-                <option value="csv">CSV</option>
-              </Select>
-            </div>
-          )}
-          {actionError && (
-            <p
-              role="alert"
-              className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700"
-            >
-              {actionError.message}
-            </p>
-          )}
-          {list.isLoading ? (
-            <Loading />
-          ) : list.isError ? (
-            <ErrorState
-              message={list.error.message}
-              onRetry={() => list.refetch()}
-            />
-          ) : (
-            <section className="overflow-x-auto rounded-xl border border-neutral-200 bg-white shadow-sm">
-              <table className="w-full text-sm">
-                <thead className="border-b border-neutral-200 bg-neutral-50 text-xs text-neutral-600">
-                  <tr>
-                    <th className="whitespace-nowrap px-4 py-3 text-left">
-                      ล็อต
-                    </th>
-                    <th className="px-4 py-3 text-left">สินค้า</th>
-                    <th className="whitespace-nowrap px-4 py-3 text-right">
-                      จำนวน / ใช้แล้ว
-                    </th>
-                    <th className="whitespace-nowrap px-4 py-3 text-right">
-                      แต้ม/รหัส
-                    </th>
-                    <th className="whitespace-nowrap px-4 py-3 text-left">
-                      หมดอายุ
-                    </th>
-                    <th className="whitespace-nowrap px-4 py-3 text-left">
-                      สถานะ
-                    </th>
-                    <th className="whitespace-nowrap px-4 py-3 text-right">
-                      จัดการ
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-neutral-100">
-                  {(list.data?.data ?? []).map((b) => (
-                    <tr key={b.id}>
-                      <td className="whitespace-nowrap px-4 py-3">
-                        <p className="font-mono font-medium">{b.batchNo}</p>
-                        <p className="text-xs text-neutral-500">
-                          {b.lotNumber
-                            ? `ล็อตสินค้า ${b.lotNumber}`
-                            : "ยังไม่ระบุล็อตสินค้า"}
-                        </p>
-                      </td>
-                      <td className="px-4 py-3">
-                        <p>{b.skuName}</p>
-                        <p className="font-mono text-xs text-neutral-500">
-                          {b.skuCode}
-                        </p>
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
-                        {num.format(b.quantity)}
-                        <span className="text-neutral-500">
-                          {" "}
-                          / {num.format(b.stats.used)}
-                        </span>
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
-                        {num.format(b.pointsPerCode)}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3">
-                        {b.codeExpiresAt
-                          ? formatThaiDateTime(b.codeExpiresAt)
-                          : "ไม่หมดอายุ"}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3 space-x-1">
-                        <Badge variant={BATCH_STATUS_VARIANT[b.status]}>
-                          {BATCH_STATUS_LABEL[b.status]}
-                        </Badge>
-                        {b.isTest && <Badge variant="outline">ทดสอบ</Badge>}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-right">
-                        <div className="flex justify-end gap-1">
-                          {b.status === "draft" && canExport && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              disabled={exportBatch.isPending}
-                              onClick={() => onExport(b)}
-                            >
-                              <Download
-                                className="mr-1 h-3.5 w-3.5"
-                                aria-hidden
-                              />
-                              {exportBatch.isPending &&
-                              exportBatch.variables?.id === b.id
-                                ? "กำลังสร้าง…"
-                                : "ส่งออก"}
-                            </Button>
-                          )}
-                          {b.status === "draft" && !canExport && (
-                            <span className="self-center text-xs text-neutral-500">
-                              รอ owner ส่งออก
-                            </span>
-                          )}
-                          {b.status === "exported" && (
-                            <Button
-                              size="sm"
-                              disabled={activate.isPending}
-                              onClick={() => activate.mutate(b.id)}
-                            >
-                              <Power className="mr-1 h-3.5 w-3.5" aria-hidden />
-                              เปิดใช้
-                            </Button>
-                          )}
-                          {b.status !== "void" && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              disabled={voidBatch.isPending}
-                              onClick={() => onVoid(b)}
-                            >
-                              <XCircle
-                                className="mr-1 h-3.5 w-3.5"
-                                aria-hidden
-                              />
-                              ยกเลิก
-                            </Button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
+              <div className="space-y-1.5">
+                <Label htmlFor="pc-search">คำค้นหา</Label>
+                <div className="relative">
+                  <Search
+                    className="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 text-neutral-400"
+                    aria-hidden
+                  />
+                  <Input
+                    id="pc-search"
+                    className="pl-8"
+                    placeholder="เลขล็อต, รหัสหรือชื่อสินค้า"
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="space-y-1.5 sm:max-w-52">
+                <Label htmlFor="pc-status">สถานะ</Label>
+                <Select
+                  id="pc-status"
+                  value={filters.status}
+                  onChange={(e) =>
+                    setFilters((f) => ({
+                      ...f,
+                      status: e.target.value as BatchStatus | "",
+                      page: 1,
+                    }))
+                  }
+                >
+                  <option value="">ทุกสถานะ</option>
+                  {(Object.keys(BATCH_STATUS_LABEL) as BatchStatus[]).map((s) => (
+                    <option key={s} value={s}>
+                      {BATCH_STATUS_LABEL[s]}
+                    </option>
                   ))}
-                </tbody>
-              </table>
-              {list.data?.data.length === 0 && (
-                <p className="py-12 text-center text-sm text-neutral-500">
-                  ยังไม่มีล็อตรหัสสินค้า
-                </p>
-              )}
-            </section>
-          )}
-          {list.data && totalPages > 1 && (
-            <Pagination
-              currentPage={filters.page}
-              totalPages={totalPages}
-              totalItems={list.data.meta.total}
+                </Select>
+              </div>
+              <Button
+                type="submit"
+                variant="outline"
+                className={SEARCH_FORM_SUBMIT}
+              >
+                ค้นหา
+              </Button>
+            </form>
+          </SearchPanel>
+        }
+        content={
+          <div className="space-y-3">
+            {canExport && (
+              <div className="flex items-center justify-end gap-2">
+                <Label
+                  htmlFor="pc-format"
+                  className="whitespace-nowrap text-xs text-neutral-600"
+                >
+                  ไฟล์ส่งออก
+                </Label>
+                <Select
+                  id="pc-format"
+                  className="h-8 w-24 text-xs"
+                  value={format}
+                  onChange={(e) => setFormat(e.target.value as ExportFormat)}
+                >
+                  <option value="xlsx">XLSX</option>
+                  <option value="csv">CSV</option>
+                </Select>
+              </div>
+            )}
+            {actionError && (
+              <p
+                role="alert"
+                className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700"
+              >
+                {actionError.message}
+              </p>
+            )}
+            <DataTable
+              rows={list.data?.data ?? []}
+              columns={columns}
+              meta={
+                list.data?.meta ?? {
+                  page: filters.page,
+                  limit: 20,
+                  total: 0,
+                  totalPages: 1,
+                }
+              }
+              isLoading={list.isLoading}
+              isError={list.isError}
+              onRetry={() => list.refetch()}
               onPageChange={(page) => setFilters((f) => ({ ...f, page }))}
+              actions={(b) => (
+                <div className="flex justify-end gap-1">
+                  <Link
+                    href={`/product-codes/${b.id}`}
+                    className={buttonVariants({ size: "sm", variant: "ghost" })}
+                  >
+                    {b.status === "draft" ? (
+                      <>
+                        <Pencil className="mr-1 h-3.5 w-3.5" aria-hidden />
+                        แก้ไข
+                      </>
+                    ) : (
+                      <>
+                        <Eye className="mr-1 h-3.5 w-3.5" aria-hidden />
+                        ดูข้อมูล
+                      </>
+                    )}
+                  </Link>
+                  {b.status === "draft" && canExport && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={exportBatch.isPending}
+                      onClick={() => onExport(b)}
+                    >
+                      <Download className="mr-1 h-3.5 w-3.5" aria-hidden />
+                      {exportBatch.isPending &&
+                      exportBatch.variables?.id === b.id
+                        ? "กำลังสร้าง…"
+                        : "ส่งออก"}
+                    </Button>
+                  )}
+                  {b.status === "draft" && !canExport && (
+                    <span className="self-center text-xs text-neutral-500">
+                      รอ owner ส่งออก
+                    </span>
+                  )}
+                  {b.status === "exported" && (
+                    <Button
+                      size="sm"
+                      disabled={activate.isPending}
+                      onClick={() => activate.mutate(b.id)}
+                    >
+                      <Power className="mr-1 h-3.5 w-3.5" aria-hidden />
+                      เปิดใช้
+                    </Button>
+                  )}
+                  {b.status !== "void" && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={voidBatch.isPending}
+                      onClick={() => onVoid(b)}
+                    >
+                      <XCircle className="mr-1 h-3.5 w-3.5" aria-hidden />
+                      ยกเลิก
+                    </Button>
+                  )}
+                </div>
+              )}
             />
-          )}
-        </div>
-      </div>
+          </div>
+        }
+      />
     </>
-  );
-}
-
-function CreateBatchForm() {
-  const create = useCreateBatch();
-  const [form, setForm] = useState<BatchFormValues>(EMPTY_BATCH_FORM);
-  const [error, setError] = useState<string | null>(null);
-
-  const set = <K extends keyof BatchFormValues>(
-    key: K,
-    value: BatchFormValues[K],
-  ) => setForm((f) => ({ ...f, [key]: value }));
-
-  const submit = (e: FormEvent) => {
-    e.preventDefault();
-    const parsed = batchFormSchema.safeParse(form);
-    if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? "กรุณาตรวจสอบข้อมูล");
-      return;
-    }
-    if (!parsed.data.isTest && !parsed.data.lotNumber) {
-      if (
-        !window.confirm(
-          "ยังไม่ระบุเลขล็อตสินค้า — เปิดใช้งานไม่ได้จนกว่าจะระบุ สร้างเป็นร่างไว้ก่อน?",
-        )
-      )
-        return;
-    }
-    setError(null);
-    create.mutate(parsed.data, { onSuccess: () => setForm(EMPTY_BATCH_FORM) });
-  };
-
-  const message = error ?? create.error?.message ?? null;
-
-  return (
-    <SearchPanel title="สร้างล็อตรหัสใหม่">
-      <form
-        onSubmit={submit}
-        className="grid grid-cols-1 items-end gap-3 sm:grid-cols-2 lg:grid-cols-4"
-      >
-        <div className="space-y-1.5">
-          <Label htmlFor="pc-sku">สินค้า</Label>
-          <SKUSelect
-            id="pc-sku"
-            value={form.erpSkuId ? String(form.erpSkuId) : ""}
-            current={{
-              id: form.erpSkuId ? String(form.erpSkuId) : "",
-              code: form.skuCode,
-              name: form.skuName,
-            }}
-            disabled={false}
-            onPick={(s) =>
-              setForm((f) => ({
-                ...f,
-                erpSkuId: s.id,
-                skuCode: s.code,
-                skuName: s.name,
-                skuPrice: s.price,
-              }))
-            }
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="pc-qty">จำนวนรหัส</Label>
-          <Input
-            id="pc-qty"
-            type="number"
-            min={1}
-            max={100000}
-            value={form.quantity}
-            onChange={(e) => set("quantity", Number(e.target.value))}
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="pc-points">แต้มต่อรหัส</Label>
-          <Input
-            id="pc-points"
-            type="number"
-            min={1}
-            value={form.pointsPerCode}
-            onChange={(e) => set("pointsPerCode", Number(e.target.value))}
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="pc-lot">เลขล็อตสินค้า</Label>
-          <Input
-            id="pc-lot"
-            maxLength={100}
-            placeholder="ตามที่พิมพ์บนบรรจุภัณฑ์"
-            value={form.lotNumber}
-            onChange={(e) => set("lotNumber", e.target.value)}
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="pc-lot-exp">วันหมดอายุสินค้า</Label>
-          <ThaiDateInput
-            id="pc-lot-exp"
-            kind="date"
-            value={form.lotExpiryDate}
-            onChange={(v) => set("lotExpiryDate", v)}
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="pc-code-exp">รหัสใช้ได้ถึง</Label>
-          <ThaiDateInput
-            id="pc-code-exp"
-            kind="date"
-            value={form.codeExpiresAt}
-            onChange={(v) => set("codeExpiresAt", v)}
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="pc-note">หมายเหตุ</Label>
-          <Input
-            id="pc-note"
-            maxLength={500}
-            value={form.note}
-            onChange={(e) => set("note", e.target.value)}
-          />
-        </div>
-        <label
-          className="flex h-9 items-center gap-2 text-sm"
-          title="ใช้ได้เฉพาะสมาชิกผู้ทดสอบ ไม่ต้องระบุล็อตสินค้า"
-        >
-          <input
-            type="checkbox"
-            checked={form.isTest}
-            onChange={(e) => set("isTest", e.target.checked)}
-          />
-          ล็อตทดสอบ
-          <span className="text-xs text-neutral-500">(ไม่ต้องระบุล็อตสินค้า)</span>
-        </label>
-        {message && (
-          <p role="alert" className="col-span-full text-xs text-red-600">
-            {message}
-          </p>
-        )}
-        <div className="col-span-full flex justify-end">
-          <Button
-            type="submit"
-            className="w-full sm:w-auto sm:min-w-40"
-            disabled={create.isPending}
-          >
-            {create.isPending ? "กำลังสร้าง…" : "สร้างล็อต (ร่าง)"}
-          </Button>
-        </div>
-      </form>
-    </SearchPanel>
   );
 }

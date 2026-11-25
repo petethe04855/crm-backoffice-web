@@ -25,8 +25,16 @@ export const productCodesApi = {
     const { data } = await crmClient.get<ApiListResponse<ProductCodeBatch>>("/product-code-batches", { params });
     return data;
   },
+  async get(id: number): Promise<ProductCodeBatch> {
+    const { data } = await crmClient.get<ApiResponse<ProductCodeBatch>>(`/product-code-batches/${id}`);
+    return data.data;
+  },
   async create(input: BatchInput): Promise<ProductCodeBatch> {
     const { data } = await crmClient.post<ApiResponse<ProductCodeBatch>>("/product-code-batches", input);
+    return data.data;
+  },
+  async update(id: number, input: BatchInput): Promise<ProductCodeBatch> {
+    const { data } = await crmClient.patch<ApiResponse<ProductCodeBatch>>(`/product-code-batches/${id}`, input);
     return data.data;
   },
   /** Generates the codes and downloads the print file. Works once per batch. */

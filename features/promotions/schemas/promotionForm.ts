@@ -100,12 +100,23 @@ export const promotionFormSchema = z
         message: "ลิงก์ต้องเริ่มต้นด้วย https://",
       });
     }
-    if ((v.ctaType === "reward" || v.ctaType === "coupon") && target === "") {
-      ctx.addIssue({
-        code: "custom",
-        path: ["ctaTarget"],
-        message: v.ctaType === "reward" ? "กรุณาระบุรหัสของรางวัล" : "กรุณาระบุรหัสคูปอง",
-      });
+    if (v.ctaType === "reward" || v.ctaType === "coupon") {
+      if (target === "") {
+        ctx.addIssue({
+          code: "custom",
+          path: ["ctaTarget"],
+          message: v.ctaType === "reward" ? "กรุณาเลือกของรางวัล" : "กรุณาเลือกคูปอง",
+        });
+      } else if (!/^[1-9]\d*$/.test(target)) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["ctaTarget"],
+          message:
+            v.ctaType === "reward"
+              ? "กรุณาเลือกของรางวัล (ID ต้องเป็นตัวเลขที่มากกว่า 0)"
+              : "กรุณาเลือกคูปอง (ID ต้องเป็นตัวเลขที่มากกว่า 0)",
+        });
+      }
     }
   });
 

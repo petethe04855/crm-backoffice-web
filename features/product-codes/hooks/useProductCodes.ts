@@ -11,6 +11,14 @@ export function useProductCodeBatches(f: BatchFilters) {
   return useQuery({ queryKey: [...key, f], queryFn: () => productCodesApi.list(f), placeholderData: keepPreviousData });
 }
 
+export function useProductCodeBatch(id: number) {
+  return useQuery({
+    queryKey: [...key, "detail", id],
+    queryFn: () => productCodesApi.get(id),
+    enabled: Number.isFinite(id) && id > 0,
+  });
+}
+
 function useInvalidate() {
   const qc = useQueryClient();
   return () => qc.invalidateQueries({ queryKey: key });
@@ -19,6 +27,14 @@ function useInvalidate() {
 export function useCreateBatch() {
   const invalidate = useInvalidate();
   return useMutation({ mutationFn: productCodesApi.create, onSuccess: invalidate });
+}
+
+export function useUpdateBatch(id: number) {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: (input: Parameters<typeof productCodesApi.update>[1]) => productCodesApi.update(id, input),
+    onSuccess: invalidate,
+  });
 }
 
 export function useExportBatch() {
